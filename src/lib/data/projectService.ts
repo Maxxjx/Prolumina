@@ -28,7 +28,7 @@ const mapPrismaProjectToProjectType = (project: any): Project => {
     budget: project.budget || undefined,
     spent: project.spent || undefined,
     clientId: project.clientId || undefined,
-    team: project.teamMembers?.map((member: any) => member.userId) || [],
+    team: project.team?.map((member: any) => member.id) || [],
     tags: tags,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString()
@@ -39,7 +39,7 @@ export const projectService = {
   getProjects: async (): Promise<Project[]> => {
     const projects = await prisma.project.findMany({
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });
@@ -51,7 +51,7 @@ export const projectService = {
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });
@@ -65,7 +65,7 @@ export const projectService = {
     const projects = await prisma.project.findMany({
       where: { clientId },
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });
@@ -76,14 +76,14 @@ export const projectService = {
   getProjectsByTeamMember: async (userId: string): Promise<Project[]> => {
     const projects = await prisma.project.findMany({
       where: {
-        teamMembers: {
+        team: {
           some: {
-            userId
+            id: userId
           }
         }
       },
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });
@@ -109,21 +109,15 @@ export const projectService = {
         budget: projectData.budget || null,
         spent: projectData.spent || 0,
         clientId: projectData.clientId || null,
-        tags: projectData.tags ? JSON.stringify(projectData.tags) : null
+        tags: projectData.tags ? JSON.stringify(projectData.tags) : null,
+        // Connect team members if provided
+        team: projectData.team && projectData.team.length > 0 
+          ? { 
+              connect: projectData.team.map((userId: string) => ({ id: userId }))
+            } 
+          : undefined
       }
     });
-    
-    // Add team members if provided
-    if (projectData.team && projectData.team.length > 0) {
-      const teamMembers = projectData.team.map((userId: string) => ({ 
-        projectId: newProject.id, 
-        userId 
-      }));
-      
-      await prisma.projectTeamMember.createMany({
-        data: teamMembers
-      });
-    }
     
     // Create activity log entry
     await prisma.activityLog.create({
@@ -141,7 +135,7 @@ export const projectService = {
     const createdProject = await prisma.project.findUnique({
       where: { id: newProject.id },
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });
@@ -183,27 +177,32 @@ export const projectService = {
         tags: projectData.tags ? JSON.stringify(projectData.tags) : undefined
       },
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });
     
     // Update team members if provided
     if (projectData.team) {
-      // First remove all existing team members
-      await prisma.projectTeamMember.deleteMany({
-        where: { projectId: id }
+      // First disconnect all existing team members
+      await prisma.project.update({
+        where: { id },
+        data: {
+          team: {
+            set: []
+          }
+        }
       });
       
-      // Then add the new team members
+      // Then connect the new team members
       if (projectData.team.length > 0) {
-        const teamMembers = projectData.team.map((userId: string) => ({ 
-          projectId: id, 
-          userId 
-        }));
-        
-        await prisma.projectTeamMember.createMany({
-          data: teamMembers
+        await prisma.project.update({
+          where: { id },
+          data: {
+            team: {
+              connect: projectData.team.map((userId: string) => ({ id: userId }))
+            }
+          }
         });
       }
     }
@@ -211,7 +210,7 @@ export const projectService = {
     // Create activity log entry
     await prisma.activityLog.create({
       data: {
-        userId: userId,
+        userId,
         action: `updated by ${userName}`,
         entityType: 'project',
         entityId: String(id),
@@ -220,11 +219,11 @@ export const projectService = {
       }
     });
     
-    // Get the updated project with the new team members
+    // Get the updated project with related data
     const finalProject = await prisma.project.findUnique({
       where: { id },
       include: {
-        teamMembers: true,
+        team: true,
         client: true
       }
     });

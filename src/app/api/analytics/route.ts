@@ -15,14 +15,14 @@ const analyticsService = {
       // Get projects by status using raw query
       const projectsByStatus = await prisma.$queryRaw`
         SELECT status, COUNT(*) as count 
-        FROM Project 
+        FROM "public"."Project" 
         GROUP BY status
       `;
       
       // Get projects by priority using raw query
       const projectsByPriority = await prisma.$queryRaw`
         SELECT priority, COUNT(*) as count 
-        FROM Project 
+        FROM "public"."Project" 
         GROUP BY priority
       `;
       
@@ -63,14 +63,14 @@ const analyticsService = {
       // Get tasks by status using raw query
       const tasksByStatus = await prisma.$queryRaw`
         SELECT status, COUNT(*) as count 
-        FROM Task 
+        FROM "public"."Task" 
         GROUP BY status
       `;
       
       // Get tasks by priority using raw query
       const tasksByPriority = await prisma.$queryRaw`
         SELECT priority, COUNT(*) as count 
-        FROM Task 
+        FROM "public"."Task" 
         GROUP BY priority
       `;
       
@@ -118,8 +118,8 @@ const analyticsService = {
       // Get tasks by assignee using raw query
       const tasksByAssignee = await prisma.$queryRaw`
         SELECT u.name, COUNT(t.id) as taskCount
-        FROM User u
-        LEFT JOIN Task t ON u.id = t.assigneeId
+        FROM "public"."User" u
+        LEFT JOIN "public"."Task" t ON u.id = t."assigneeId"
         GROUP BY u.id, u.name
         ORDER BY taskCount DESC
         LIMIT 10
@@ -174,9 +174,9 @@ const analyticsService = {
       // Get time entries per project using raw query
       const timeByProject = await prisma.$queryRaw`
         SELECT p.name, SUM(te.minutes) as minutes
-        FROM TimeEntry te
-        JOIN Task t ON te.taskId = t.id
-        JOIN Project p ON t.projectId = p.id
+        FROM "public"."TimeEntry" te
+        JOIN "public"."Task" t ON te."taskId" = t.id
+        JOIN "public"."Project" p ON t."projectId" = p.id
         GROUP BY p.id, p.name
         ORDER BY minutes DESC
         LIMIT 10
@@ -185,8 +185,8 @@ const analyticsService = {
       // Get time entries per user using raw query
       const timeByUser = await prisma.$queryRaw`
         SELECT u.name, SUM(te.minutes) as minutes
-        FROM TimeEntry te
-        JOIN User u ON te.userId = u.id
+        FROM "public"."TimeEntry" te
+        JOIN "public"."User" u ON te."userId" = u.id
         GROUP BY u.id, u.name
         ORDER BY minutes DESC
         LIMIT 10
