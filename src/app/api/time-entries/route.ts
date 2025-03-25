@@ -13,7 +13,7 @@ const timeEntryService = {
           task: true
         },
         orderBy: {
-          startTime: 'desc'
+          date: 'desc'
         }
       });
       
@@ -23,7 +23,8 @@ const timeEntryService = {
         taskId: entry.taskId,
         projectId: entry.task?.projectId,
         description: entry.description,
-        startTime: entry.startTime.toISOString(),
+        date: entry.date.toISOString(),
+        startTime: entry.startTime?.toISOString(),
         endTime: entry.endTime?.toISOString(),
         duration: entry.duration,
         billable: entry.billable,
@@ -55,7 +56,7 @@ const timeEntryService = {
           task: true
         },
         orderBy: {
-          startTime: 'desc'
+          date: 'desc'
         }
       });
       
@@ -65,7 +66,8 @@ const timeEntryService = {
         taskId: entry.taskId,
         projectId: entry.task?.projectId,
         description: entry.description,
-        startTime: entry.startTime.toISOString(),
+        date: entry.date.toISOString(),
+        startTime: entry.startTime?.toISOString(),
         endTime: entry.endTime?.toISOString(),
         duration: entry.duration,
         billable: entry.billable,
@@ -97,7 +99,7 @@ const timeEntryService = {
           task: true
         },
         orderBy: {
-          startTime: 'desc'
+          date: 'desc'
         }
       });
       
@@ -107,7 +109,8 @@ const timeEntryService = {
         taskId: entry.taskId,
         projectId: entry.task?.projectId,
         description: entry.description,
-        startTime: entry.startTime.toISOString(),
+        date: entry.date.toISOString(),
+        startTime: entry.startTime?.toISOString(),
         endTime: entry.endTime?.toISOString(),
         duration: entry.duration,
         billable: entry.billable,
@@ -137,9 +140,11 @@ const timeEntryService = {
           userId: data.userId,
           taskId: data.taskId,
           description: data.description,
-          startTime: new Date(data.startTime),
+          date: new Date(data.date || data.startTime || new Date()),
+          startTime: new Date(data.startTime || new Date()),
           endTime: data.endTime ? new Date(data.endTime) : null,
           duration: data.duration,
+          minutes: data.minutes || 0,
           billable: data.billable || false
         },
         include: {
@@ -154,7 +159,8 @@ const timeEntryService = {
         taskId: timeEntry.taskId,
         projectId: timeEntry.task?.projectId,
         description: timeEntry.description,
-        startTime: timeEntry.startTime.toISOString(),
+        date: timeEntry.date.toISOString(),
+        startTime: timeEntry.startTime?.toISOString(),
         endTime: timeEntry.endTime?.toISOString(),
         duration: timeEntry.duration,
         billable: timeEntry.billable,
@@ -183,8 +189,10 @@ const timeEntryService = {
         where: { id },
         data: {
           description: data.description,
+          date: data.date ? new Date(data.date) : undefined,
           startTime: data.startTime ? new Date(data.startTime) : undefined,
           endTime: data.endTime ? new Date(data.endTime) : null,
+          minutes: data.minutes !== undefined ? data.minutes : undefined,
           duration: data.duration,
           billable: data.billable
         },
@@ -200,7 +208,8 @@ const timeEntryService = {
         taskId: timeEntry.taskId,
         projectId: timeEntry.task?.projectId,
         description: timeEntry.description,
-        startTime: timeEntry.startTime.toISOString(),
+        date: timeEntry.date.toISOString(),
+        startTime: timeEntry.startTime?.toISOString(),
         endTime: timeEntry.endTime?.toISOString(),
         duration: timeEntry.duration,
         billable: timeEntry.billable,

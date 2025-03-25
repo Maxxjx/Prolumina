@@ -3,6 +3,19 @@ import { prisma } from '../prisma';
 
 // Helper function to map Prisma project to our Project type
 const mapPrismaProjectToProjectType = (project: any): Project => {
+  let tags = [];
+  try {
+    if (project.tags) {
+      tags = JSON.parse(project.tags);
+    }
+  } catch (error) {
+    console.error('Error parsing tags:', error);
+    // Handle non-JSON tags by treating as a single tag string
+    if (project.tags) {
+      tags = [project.tags];
+    }
+  }
+
   return {
     id: project.id,
     name: project.name,
@@ -16,7 +29,7 @@ const mapPrismaProjectToProjectType = (project: any): Project => {
     spent: project.spent || undefined,
     clientId: project.clientId || undefined,
     team: project.teamMembers?.map((member: any) => member.userId) || [],
-    tags: project.tags ? JSON.parse(project.tags) : [],
+    tags: tags,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString()
   };
