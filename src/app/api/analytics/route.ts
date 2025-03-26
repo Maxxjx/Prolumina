@@ -303,26 +303,26 @@ export async function GET(request: NextRequest) {
 
         data.analytics = {
           projects: {
-            total: projectStats.totalProjects,
-            inProgress: projectStats.projectsByStatus.find(s => s.status === 'in-progress')?.count || 0
+            total: Number(projectStats.totalProjects),
+            inProgress: Number(projectStats.projectsByStatus.find(s => s.status === 'in-progress')?.count || 0)
           },
           users: {
-            total: userStats.totalUsers,
-            team: await prisma.user.count({ where: { role: 'TEAM' } })
+            total: Number(userStats.totalUsers),
+            team: Number(await prisma.user.count({ where: { role: 'TEAM' } }))
           },
           tasks: {
-            total: taskStats.totalTasks,
-            completed: taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0,
-            inProgress: taskStats.tasksByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0,
-            overdue: taskStats.overdueTasks,
-            completion: taskStats.totalTasks > 0 
-              ? Math.round((taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0) / taskStats.totalTasks * 100)
+            total: Number(taskStats.totalTasks),
+            completed: Number(taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0),
+            inProgress: Number(taskStats.tasksByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0),
+            overdue: Number(taskStats.overdueTasks),
+            completion: Number(taskStats.totalTasks) > 0 
+              ? Math.round((Number(taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0) / Number(taskStats.totalTasks)) * 100)
               : 0
           },
           budget: {
-            total: await prisma.project.aggregate({
+            total: Number(await prisma.project.aggregate({
               _sum: { budget: true }
-            }).then(res => res._sum?.budget || 0),
+            }).then(res => res._sum?.budget || 0)),
             utilization: 70 // This should be calculated based on actual expenses if you have that data
           }
         };
