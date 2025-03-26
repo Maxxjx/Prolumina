@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { formatDate } from '@/lib/utils/date';
 
 // Sample task data
 const sampleTasks = [
@@ -159,12 +160,6 @@ export default function TaskListView() {
       default:
         return 'bg-gray-500/20 text-gray-400';
     }
-  };
-
-  // Format date to be more readable
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   return (
