@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 import { errorResponse, handleDatabaseError, handleAuthError } from '@/lib/api-utils';
-import { ProjectStats, TaskStats, UserStats, TimeStats, StatusCount, ProjectStatus, Priority } from '@/lib/data/types';
+import { ProjectStats, TaskStats, UserStats, TimeStats, StatusCount, ProjectStatus, Priority, TaskStatus } from '@/lib/data/types';
 
 // Helper function to map string status to ProjectStatus enum
 const mapProjectStatus = (status: string): ProjectStatus => {
@@ -304,83 +304,57 @@ const analyticsService = {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session?.user) {
       return handleAuthError();
     }
 
-    // Parse query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const type = searchParams.get('type') || 'summary';
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
-    
-    // Validate parameters
-    if (limit > 100) {
-      return errorResponse(
-        'Limit cannot exceed 100 items',
-        400,
-        'INVALID_LIMIT'
-      );
-    }
-    
-    // Response data object
-    const data: any = {};
-    
-    // Handle summary analytics
-    if (type === 'summary') {
-      try {
-        const projectStats = await analyticsService.getProjectStats();
-        const taskStats = await analyticsService.getTaskStats();
-        const userStats = await analyticsService.getUserStats();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
 
-        // Get completed tasks count
-        const completedTasksCount = taskStats.tasksByStatus.find(s => s.status === 'Completed')?.count || 0;
-        const totalTasksCount = taskStats.totalTasks;
+    switch (type) {
+      case 'summary': {
+        const [projectStats, taskStats, userStats, timeStats] = await Promise.all([
+          analyticsService.getProjectStats(),
+          analyticsService.getTaskStats(),
+          analyticsService.getUserStats(),
+          analyticsService.getTimeStats()
+        ]);
 
-        data.analytics = {
+        return NextResponse.json({
           projects: {
-            total: Number(projectStats.totalProjects),
-            inProgress: Number(projectStats.projectsByStatus.find(s => s.status === 'In Progress')?.count || 0)
-          },
-          users: {
-            total: Number(userStats.totalUsers),
-            team: Number(await prisma.user.count({ where: { role: 'TEAM' } }))
+            total: projectStats.totalProjects,
+            inProgress: projectStats.projectsByStatus.find(s => s.status === ProjectStatus.IN_PROGRESS)?.count || 0,
+            completed: projectStats.projectsByStatus.find(s => s.status === ProjectStatus.COMPLETED)?.count || 0,
+            onHold: projectStats.projectsByStatus.find(s => s.status === ProjectStatus.ON_HOLD)?.count || 0
           },
           tasks: {
-            total: Number(taskStats.totalTasks),
-            completed: Number(completedTasksCount),
-            inProgress: Number(taskStats.tasksByStatus.find(s => s.status === 'In Progress')?.count || 0),
-            overdue: Number(taskStats.overdueTasks),
-            completion: totalTasksCount > 0 
-              ? Math.round((Number(completedTasksCount) / Number(totalTasksCount)) * 100)
-              : 0
+            total: taskStats.totalTasks,
+            inProgress: taskStats.tasksByStatus.find(s => s.status === TaskStatus.IN_PROGRESS)?.count || 0,
+            completed: taskStats.tasksByStatus.find(s => s.status === TaskStatus.COMPLETED)?.count || 0,
+            overdue: taskStats.overdueTasks,
+            upcoming: taskStats.upcomingTasks
           },
-          budget: {
-            total: Number(await prisma.project.aggregate({
-              _sum: { budget: true }
-            }).then(res => res._sum?.budget || 0)),
-            utilization: 70 // This should be calculated based on actual expenses if you have that data
+          users: {
+            total: userStats.totalUsers,
+            active: userStats.tasksByAssignee.length
+          },
+          time: {
+            total: timeStats.totalHours,
+            tracked: timeStats.timeByProject.reduce((acc, curr) => acc + curr.minutes, 0) / 60
           }
-        };
-      } catch (error) {
-        console.error('Error fetching summary analytics:', error);
-        return handleDatabaseError(error);
+        });
       }
-    }
-    
-    // Handle recent activity
-    if (type === 'recent-activity') {
-      try {
+      case 'recent-activity': {
         const activities = await prisma.activityLog.findMany({
-          take: limit,
+          take: 10,
           orderBy: { timestamp: 'desc' },
           include: {
             user: { select: { name: true } },
           }
         });
         
-        data.analytics = {
+        return NextResponse.json({
           activity: activities.map((activity) => ({
             id: activity.id,
             userName: activity.user?.name || 'Unknown User',
@@ -392,50 +366,31 @@ export async function GET(request: NextRequest) {
               : null,
             timestamp: activity.timestamp.toISOString()
           }))
-        };
-      } catch (error) {
-        console.error('Error fetching recent activity:', error);
-        return handleDatabaseError(error);
+        });
       }
-    }
-
-    // Handle other analytics types
-    if (type === 'task-status') {
-      try {
+      case 'task-status': {
         const taskStats = await analyticsService.getTaskStats();
-        data.analytics = {
+        return NextResponse.json({
           data: [
             { status: 'NOT_STARTED', count: taskStats.tasksByStatus.find(s => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
             { status: 'IN_PROGRESS', count: taskStats.tasksByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
             { status: 'REVIEW', count: taskStats.tasksByStatus.find(s => s.status === 'REVIEW')?.count || 0, color: '#F59E0B' },
             { status: 'COMPLETED', count: taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
           ]
-        };
-      } catch (error) {
-        console.error('Error fetching task status analytics:', error);
-        return handleDatabaseError(error);
+        });
       }
-    }
-
-    if (type === 'project-status') {
-      try {
+      case 'project-status': {
         const projectStats = await analyticsService.getProjectStats();
-        data.analytics = {
+        return NextResponse.json({
           data: [
             { status: 'NOT_STARTED', count: projectStats.projectsByStatus.find(s => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
             { status: 'IN_PROGRESS', count: projectStats.projectsByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
             { status: 'ON_HOLD', count: projectStats.projectsByStatus.find(s => s.status === 'ON_HOLD')?.count || 0, color: '#F59E0B' },
             { status: 'COMPLETED', count: projectStats.projectsByStatus.find(s => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
           ]
-        };
-      } catch (error) {
-        console.error('Error fetching project status analytics:', error);
-        return handleDatabaseError(error);
+        });
       }
-    }
-
-    if (type === 'user-tasks') {
-      try {
+      case 'user-tasks': {
         const users = await prisma.user.findMany({
           where: { role: 'TEAM' },
           include: {
@@ -443,7 +398,7 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        data.analytics = {
+        return NextResponse.json({
           data: users.map(user => ({
             user: {
               id: user.id,
@@ -453,14 +408,16 @@ export async function GET(request: NextRequest) {
             completedTasks: user.tasks.filter(task => task.status === 'COMPLETED').length,
             inProgressTasks: user.tasks.filter(task => task.status === 'IN_PROGRESS').length
           }))
-        };
-      } catch (error) {
-        console.error('Error fetching user tasks analytics:', error);
-        return handleDatabaseError(error);
+        });
+      }
+      default: {
+        return errorResponse(
+          'Invalid type',
+          400,
+          'INVALID_TYPE'
+        );
       }
     }
-
-    return NextResponse.json(data);
   } catch (error) {
     console.error('Error in analytics API:', error);
     return errorResponse('Internal server error', 500);
