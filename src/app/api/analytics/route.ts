@@ -334,7 +334,65 @@ export async function GET(request: NextRequest) {
     }
 
     // Handle other analytics types
-    // ... existing implementation for other types
+    if (type === 'task-status') {
+      try {
+        const taskStats = await analyticsService.getTaskStats();
+        data.analytics = {
+          data: [
+            { status: 'NOT_STARTED', count: taskStats.tasksByStatus.find((s: any) => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
+            { status: 'IN_PROGRESS', count: taskStats.tasksByStatus.find((s: any) => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
+            { status: 'REVIEW', count: taskStats.tasksByStatus.find((s: any) => s.status === 'REVIEW')?.count || 0, color: '#F59E0B' },
+            { status: 'COMPLETED', count: taskStats.tasksByStatus.find((s: any) => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
+          ]
+        };
+      } catch (error) {
+        console.error('Error fetching task status analytics:', error);
+        return handleDatabaseError(error);
+      }
+    }
+
+    if (type === 'project-status') {
+      try {
+        const projectStats = await analyticsService.getProjectStats();
+        data.analytics = {
+          data: [
+            { status: 'NOT_STARTED', count: projectStats.projectsByStatus.find((s: any) => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
+            { status: 'IN_PROGRESS', count: projectStats.projectsByStatus.find((s: any) => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
+            { status: 'ON_HOLD', count: projectStats.projectsByStatus.find((s: any) => s.status === 'ON_HOLD')?.count || 0, color: '#F59E0B' },
+            { status: 'COMPLETED', count: projectStats.projectsByStatus.find((s: any) => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
+          ]
+        };
+      } catch (error) {
+        console.error('Error fetching project status analytics:', error);
+        return handleDatabaseError(error);
+      }
+    }
+
+    if (type === 'user-tasks') {
+      try {
+        const users = await prisma.user.findMany({
+          where: { role: 'TEAM' },
+          include: {
+            tasks: true
+          }
+        });
+
+        data.analytics = {
+          data: users.map(user => ({
+            user: {
+              id: user.id,
+              name: user.name
+            },
+            totalTasks: user.tasks.length,
+            completedTasks: user.tasks.filter(task => task.status === 'COMPLETED').length,
+            inProgressTasks: user.tasks.filter(task => task.status === 'IN_PROGRESS').length
+          }))
+        };
+      } catch (error) {
+        console.error('Error fetching user tasks analytics:', error);
+        return handleDatabaseError(error);
+      }
+    }
 
     return NextResponse.json(data);
   } catch (error) {

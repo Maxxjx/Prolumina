@@ -1,109 +1,141 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
+import React from 'react';
 import { useProjectStatusAnalytics } from '@/lib/hooks/useAnalytics';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import dynamic from 'next/dynamic';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-export default function ProjectStatusChart() {
-  const { data: analytics, isLoading } = useProjectStatusAnalytics();
-  const [chartData, setChartData] = useState<{
-    labels: string[];
-    datasets: {
-      label: string;
-      data: number[];
-      backgroundColor: string[];
-      borderColor: string[];
-      borderWidth: number;
-    }[];
-  }>({
-    labels: [],
-    datasets: [
-      {
-        label: 'Projects',
-        data: [],
-        backgroundColor: [],
-        borderColor: [],
-        borderWidth: 1,
-      },
-    ],
-  });
+interface ChartDataItem {
+  status: string;
+  count: number;
+  color: string;
+}
 
-  useEffect(() => {
-    if (analytics?.data) {
-      setChartData({
-        labels: analytics.data.map((item) => item.status),
-        datasets: [
-          {
-            label: 'Projects',
-            data: analytics.data.map((item) => item.count),
-            backgroundColor: analytics.data.map((item) => item.color),
-            borderColor: analytics.data.map((item) => item.color),
-            borderWidth: 1,
-          },
-        ],
-      });
-    }
-  }, [analytics]);
+interface ProjectStatusChartProps {
+  title?: string;
+  description?: string;
+  height?: number;
+}
+
+const ProjectStatusChart: React.FC<ProjectStatusChartProps> = ({
+  title = 'Project Status',
+  description = 'Distribution of projects by status',
+  height = 350
+}) => {
+  const { data, isLoading, error } = useProjectStatusAnalytics();
 
   if (isLoading) {
     return (
-      <div className="h-64 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8B5CF6]"></div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[350px] w-full" />
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!analytics?.data || analytics.data.length === 0) {
+  if (error) {
     return (
-      <div className="h-64 flex items-center justify-center">
-        <p className="text-gray-400">No project status data available.</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[350px] text-red-500">
+            Error loading chart data
+          </div>
+        </CardContent>
+      </Card>
     );
   }
+
+  const chartData = (data?.analytics?.data || []) as ChartDataItem[];
+  const labels = chartData.map(item => item.status);
+  const series = chartData.map(item => item.count);
+
+  const options = {
+    chart: {
+      type: 'bar' as const,
+      height,
+      background: 'transparent',
+      toolbar: {
+        show: true
+      }
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '55%',
+        borderRadius: 4
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent']
+    },
+    xaxis: {
+      categories: labels,
+      labels: {
+        style: {
+          colors: '#fff'
+        }
+      }
+    },
+    yaxis: {
+      title: {
+        text: 'Number of Projects',
+        style: {
+          color: '#fff'
+        }
+      },
+      labels: {
+        style: {
+          colors: '#fff'
+        }
+      }
+    },
+    fill: {
+      opacity: 1,
+      colors: chartData.map(item => item.color)
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number) => `${val} projects`
+      }
+    },
+    legend: {
+      show: false
+    }
+  };
 
   return (
-    <div className="relative h-64">
-      <Doughnut
-        data={chartData}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: {
-                color: '#ededed',
-                padding: 20,
-                font: {
-                  size: 12,
-                },
-              },
-            },
-            tooltip: {
-              backgroundColor: '#111827',
-              titleColor: '#ededed',
-              bodyColor: '#ededed',
-              borderColor: '#374151',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: true,
-              callbacks: {
-                label: function(context) {
-                  const label = context.label || '';
-                  const value = context.raw || 0;
-                  const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                  const percentage = Math.round((value as number / total) * 100);
-                  return `${label}: ${value} (${percentage}%)`;
-                }
-              }
-            },
-          },
-          cutout: '70%',
-        }}
-      />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {description && <CardDescription>{description}</CardDescription>}
+      </CardHeader>
+      <CardContent>
+        <Chart
+          options={options}
+          series={[{ name: 'Projects', data: series }]}
+          type="bar"
+          height={height}
+        />
+      </CardContent>
+    </Card>
   );
-} 
+};
+
+export default ProjectStatusChart; 
