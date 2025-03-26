@@ -182,4 +182,75 @@ export interface UserDashboardConfig {
   widgets: DashboardWidget[];
   layout: 'grid' | 'list';
   lastUpdated: string;
+}
+
+export interface StatusCount {
+  status: string;
+  count: number;
+}
+
+export interface ProjectStats {
+  totalProjects: number;
+  projectsByStatus: StatusCount[];
+  projectsByPriority: StatusCount[];
+  recentProjects: Array<{
+    id: string;
+    name: string;
+    status: ProjectStatus;
+    priority: Priority;
+    progress: number;
+    createdAt: string;
+  }>;
+}
+
+export interface TaskStats {
+  totalTasks: number;
+  tasksByStatus: StatusCount[];
+  tasksByPriority: StatusCount[];
+  overdueTasks: number;
+  upcomingTasks: number;
+}
+
+export interface UserStats {
+  totalUsers: number;
+  tasksByAssignee: Array<{
+    name: string;
+    taskCount: number;
+  }>;
+  recentActivity: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    entityName: string;
+    details: any;
+    timestamp: string;
+  }>;
+}
+
+export interface TimeStats {
+  totalHours: number;
+  timeByProject: Array<{
+    name: string;
+    minutes: number;
+  }>;
+  timeByUser: Array<{
+    name: string;
+    minutes: number;
+  }>;
+  recentTimeEntries: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    taskId: string;
+    taskTitle: string;
+    projectId: string;
+    projectName: string;
+    minutes: number;
+    description: string;
+    date: string;
+    createdAt: string;
+  }>;
 } 

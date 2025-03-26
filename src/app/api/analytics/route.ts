@@ -4,32 +4,43 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 import { errorResponse, handleDatabaseError, handleAuthError } from '@/lib/api-utils';
+import { ProjectStats, TaskStats, UserStats, TimeStats, StatusCount, ProjectStatus, Priority } from '@/lib/data/types';
 
-interface StatusCount {
-  status: string;
-  count: number;
-}
+// Helper function to map string status to ProjectStatus enum
+const mapProjectStatus = (status: string): ProjectStatus => {
+  switch (status) {
+    case 'Not Started':
+      return ProjectStatus.NOT_STARTED;
+    case 'In Progress':
+      return ProjectStatus.IN_PROGRESS;
+    case 'On Hold':
+      return ProjectStatus.ON_HOLD;
+    case 'Completed':
+      return ProjectStatus.COMPLETED;
+    case 'Cancelled':
+      return ProjectStatus.CANCELLED;
+    case 'Almost Complete':
+      return ProjectStatus.ALMOST_COMPLETE;
+    default:
+      return ProjectStatus.NOT_STARTED;
+  }
+};
 
-interface ProjectStats {
-  totalProjects: number;
-  projectsByStatus: StatusCount[];
-  projectsByPriority: StatusCount[];
-  recentProjects: any[];
-}
-
-interface TaskStats {
-  totalTasks: number;
-  tasksByStatus: StatusCount[];
-  tasksByPriority: StatusCount[];
-  overdueTasks: number;
-  upcomingTasks: number;
-}
-
-interface UserStats {
-  totalUsers: number;
-  tasksByAssignee: any[];
-  recentActivity: any[];
-}
+// Helper function to map string priority to Priority enum
+const mapPriority = (priority: string): Priority => {
+  switch (priority) {
+    case 'Low':
+      return Priority.LOW;
+    case 'Medium':
+      return Priority.MEDIUM;
+    case 'High':
+      return Priority.HIGH;
+    case 'Urgent':
+      return Priority.URGENT;
+    default:
+      return Priority.LOW;
+  }
+};
 
 // Analytics service with database implementation
 const analyticsService = {
@@ -38,19 +49,17 @@ const analyticsService = {
       // Get total count of projects
       const totalProjects = await prisma.project.count();
       
-      // Get projects by status using raw query
-      const projectsByStatus = await prisma.$queryRaw<StatusCount[]>`
-        SELECT status, COUNT(*) as count 
-        FROM "public"."Project" 
-        GROUP BY status
-      `;
+      // Get projects by status using Prisma
+      const projectsByStatus = await prisma.project.groupBy({
+        by: ['status'],
+        _count: true
+      });
       
-      // Get projects by priority using raw query
-      const projectsByPriority = await prisma.$queryRaw<StatusCount[]>`
-        SELECT priority, COUNT(*) as count 
-        FROM "public"."Project" 
-        GROUP BY priority
-      `;
+      // Get projects by priority using Prisma
+      const projectsByPriority = await prisma.project.groupBy({
+        by: ['priority'],
+        _count: true
+      });
       
       // Get recent projects
       const recentProjects = await prisma.project.findMany({
@@ -67,11 +76,20 @@ const analyticsService = {
       });
       
       return {
-        totalProjects,
-        projectsByStatus,
-        projectsByPriority,
+        totalProjects: Number(totalProjects),
+        projectsByStatus: projectsByStatus.map(stat => ({
+          status: stat.status,
+          count: Number(stat._count)
+        })),
+        projectsByPriority: projectsByPriority.map(stat => ({
+          status: stat.priority,
+          count: Number(stat._count)
+        })),
         recentProjects: recentProjects.map(p => ({
           ...p,
+          id: p.id.toString(),
+          status: mapProjectStatus(p.status),
+          priority: mapPriority(p.priority),
           createdAt: p.createdAt.toISOString()
         }))
       };
@@ -86,26 +104,24 @@ const analyticsService = {
       // Get total count of tasks
       const totalTasks = await prisma.task.count();
       
-      // Get tasks by status using raw query
-      const tasksByStatus = await prisma.$queryRaw<StatusCount[]>`
-        SELECT status, COUNT(*) as count 
-        FROM "public"."Task" 
-        GROUP BY status
-      `;
+      // Get tasks by status using Prisma
+      const tasksByStatus = await prisma.task.groupBy({
+        by: ['status'],
+        _count: true
+      });
       
-      // Get tasks by priority using raw query
-      const tasksByPriority = await prisma.$queryRaw<StatusCount[]>`
-        SELECT priority, COUNT(*) as count 
-        FROM "public"."Task" 
-        GROUP BY priority
-      `;
+      // Get tasks by priority using Prisma
+      const tasksByPriority = await prisma.task.groupBy({
+        by: ['priority'],
+        _count: true
+      });
       
       // Get overdue tasks
       const today = new Date();
       const overdueTasks = await prisma.task.count({
         where: {
           deadline: { lt: today },
-          status: { not: 'completed' }
+          status: { not: 'Completed' }
         }
       });
       
@@ -119,16 +135,22 @@ const analyticsService = {
             gte: today,
             lte: next7Days
           },
-          status: { not: 'completed' }
+          status: { not: 'Completed' }
         }
       });
       
       return {
-        totalTasks,
-        tasksByStatus,
-        tasksByPriority,
-        overdueTasks,
-        upcomingTasks
+        totalTasks: Number(totalTasks),
+        tasksByStatus: tasksByStatus.map(stat => ({
+          status: stat.status,
+          count: Number(stat._count)
+        })),
+        tasksByPriority: tasksByPriority.map(stat => ({
+          status: stat.priority,
+          count: Number(stat._count)
+        })),
+        overdueTasks: Number(overdueTasks),
+        upcomingTasks: Number(upcomingTasks)
       };
     } catch (error) {
       console.error('Error fetching task stats:', error);
@@ -141,15 +163,23 @@ const analyticsService = {
       // Get total count of users
       const totalUsers = await prisma.user.count();
       
-      // Get tasks by assignee using raw query
-      const tasksByAssignee = await prisma.$queryRaw<any[]>`
-        SELECT u.name, COUNT(t.id) as taskCount
-        FROM "public"."User" u
-        LEFT JOIN "public"."Task" t ON u.id = t."assigneeId"
-        GROUP BY u.id, u.name
-        ORDER BY taskCount DESC
-        LIMIT 10
-      `;
+      // Get tasks by assignee using Prisma
+      const tasksByAssignee = await prisma.user.findMany({
+        select: {
+          name: true,
+          _count: {
+            select: {
+              tasks: true
+            }
+          }
+        },
+        orderBy: {
+          tasks: {
+            _count: 'desc'
+          }
+        },
+        take: 10
+      });
       
       // Get recent user activity
       const recentActivity = await prisma.activityLog.findMany({
@@ -166,15 +196,18 @@ const analyticsService = {
       });
       
       return {
-        totalUsers,
-        tasksByAssignee,
+        totalUsers: Number(totalUsers),
+        tasksByAssignee: tasksByAssignee.map(user => ({
+          name: user.name,
+          taskCount: Number(user._count.tasks)
+        })),
         recentActivity: recentActivity.map(a => ({
-          id: a.id,
-          userId: a.userId,
-          userName: a.user?.name,
+          id: a.id.toString(),
+          userId: a.userId.toString(),
+          userName: a.user?.name || 'Unknown User',
           action: a.action,
           entityType: a.entityType,
-          entityId: a.entityId,
+          entityId: a.entityId.toString(),
           entityName: a.entityName,
           details: a.details,
           timestamp: a.timestamp.toISOString()
@@ -301,10 +334,14 @@ export async function GET(request: NextRequest) {
         const taskStats = await analyticsService.getTaskStats();
         const userStats = await analyticsService.getUserStats();
 
+        // Get completed tasks count
+        const completedTasksCount = taskStats.tasksByStatus.find(s => s.status === 'Completed')?.count || 0;
+        const totalTasksCount = taskStats.totalTasks;
+
         data.analytics = {
           projects: {
             total: Number(projectStats.totalProjects),
-            inProgress: Number(projectStats.projectsByStatus.find(s => s.status === 'in-progress')?.count || 0)
+            inProgress: Number(projectStats.projectsByStatus.find(s => s.status === 'In Progress')?.count || 0)
           },
           users: {
             total: Number(userStats.totalUsers),
@@ -312,11 +349,11 @@ export async function GET(request: NextRequest) {
           },
           tasks: {
             total: Number(taskStats.totalTasks),
-            completed: Number(taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0),
-            inProgress: Number(taskStats.tasksByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0),
+            completed: Number(completedTasksCount),
+            inProgress: Number(taskStats.tasksByStatus.find(s => s.status === 'In Progress')?.count || 0),
             overdue: Number(taskStats.overdueTasks),
-            completion: Number(taskStats.totalTasks) > 0 
-              ? Math.round((Number(taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0) / Number(taskStats.totalTasks)) * 100)
+            completion: totalTasksCount > 0 
+              ? Math.round((Number(completedTasksCount) / Number(totalTasksCount)) * 100)
               : 0
           },
           budget: {
@@ -426,10 +463,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error in analytics API:', error);
-    return errorResponse(
-      'An unexpected error occurred',
-      500,
-      'SERVER_ERROR'
-    );
+    return errorResponse('Internal server error', 500);
   }
 }
