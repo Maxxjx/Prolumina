@@ -42,16 +42,16 @@ export async function GET() {
           },
         });
         
-        return NextResponse.json(users);
+        return NextResponse.json({ users });
       } else {
         // Admins can see all user data
         const users = await db.user.findMany();
-        return NextResponse.json(users);
+        return NextResponse.json({ users });
       }
     } else {
       // Use mock data service
       const users = await userService.getUsers();
-    return NextResponse.json({ users }, { status: 200 });
+      return NextResponse.json({ users }, { status: 200 });
     }
   } catch (error) {
     console.error('Error fetching users:', error);

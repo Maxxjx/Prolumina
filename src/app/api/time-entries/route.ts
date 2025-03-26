@@ -256,9 +256,12 @@ export async function GET(request: NextRequest) {
       );
     }
     
+    // Get query parameters
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const taskId = searchParams.get('taskId');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     
     let timeEntries;
     
@@ -266,11 +269,27 @@ export async function GET(request: NextRequest) {
       timeEntries = await timeEntryService.getTimeEntriesByUserId(userId);
     } else if (taskId) {
       timeEntries = await timeEntryService.getTimeEntriesByTaskId(Number(taskId));
+    } else if (startDate && endDate) {
+      // Get time entries within date range
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      timeEntries = await prisma.timeEntry.findMany({
+        where: {
+          date: {
+            gte: start,
+            lte: end
+          }
+        },
+        orderBy: {
+          date: 'desc'
+        }
+      });
     } else {
       timeEntries = await timeEntryService.getTimeEntries();
     }
     
-    return NextResponse.json(timeEntries);
+    return NextResponse.json({ timeEntries });
   } catch (error) {
     console.error('Error fetching time entries:', error);
     return NextResponse.json(

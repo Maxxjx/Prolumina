@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       projects = await projectService.getProjects();
     }
     
-    return NextResponse.json(projects);
+    return NextResponse.json({ projects });
   } catch (error) {
     console.error('Error fetching projects:', error);
     return NextResponse.json(
