@@ -259,43 +259,46 @@ const AdminDashboard = () => {
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm">Completed</span>
-                  <span className="text-sm">{analytics?.tasks.completed || 0}</span>
+                  <span className="text-sm">{analytics?.tasks?.completed || 0}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-1.5">
-                  <div className="bg-green-500 h-1.5 rounded-full" style={{ 
-                    width: `${analytics ? (analytics.tasks.completed / analytics.tasks.total) * 100 : 0}%` 
-                  }}></div>
+                  <div 
+                    className="bg-green-500 h-1.5 rounded-full" 
+                    style={{ width: `${analytics?.tasks ? (analytics.tasks.completed / analytics.tasks.total) * 100 : 0}%` }}
+                  ></div>
                 </div>
               </div>
               
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm">In Progress</span>
-                  <span className="text-sm">{analytics?.tasks.inProgress || 0}</span>
+                  <span className="text-sm">{analytics?.tasks?.inProgress || 0}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-1.5">
-                  <div className="bg-blue-500 h-1.5 rounded-full" style={{ 
-                    width: `${analytics ? (analytics.tasks.inProgress / analytics.tasks.total) * 100 : 0}%` 
-                  }}></div>
+                  <div 
+                    className="bg-blue-500 h-1.5 rounded-full" 
+                    style={{ width: `${analytics?.tasks ? (analytics.tasks.inProgress / analytics.tasks.total) * 100 : 0}%` }}
+                  ></div>
                 </div>
               </div>
               
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm">Overdue</span>
-                  <span className="text-sm text-red-500">{analytics?.tasks.overdue || 0}</span>
+                  <span className="text-sm text-red-500">{analytics?.tasks?.overdue || 0}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-1.5">
-                  <div className="bg-red-500 h-1.5 rounded-full" style={{ 
-                    width: `${analytics ? (analytics.tasks.overdue / analytics.tasks.total) * 100 : 0}%` 
-                  }}></div>
+                  <div 
+                    className="bg-red-500 h-1.5 rounded-full" 
+                    style={{ width: `${analytics?.tasks ? (analytics.tasks.overdue / analytics.tasks.total) * 100 : 0}%` }}
+                  ></div>
                 </div>
               </div>
               
               <div className="mt-4 pt-4 border-t border-gray-700">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Completion Rate</span>
-                  <span className="text-sm font-medium text-green-500">{analytics?.tasks.completion || 0}%</span>
+                  <span className="text-sm font-medium text-green-500">{analytics?.tasks?.completion || 0}%</span>
                 </div>
               </div>
             </div>

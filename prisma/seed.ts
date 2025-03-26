@@ -204,8 +204,55 @@ async function main() {
     },
   });
 
+<<<<<<< HEAD
   // Seed tasks
   console.log('Seeding tasks...');
+=======
+  // Add team members to projects
+  console.log('Adding team members to projects...');
+  await prisma.projectTeamMember.create({
+    data: {
+      projectId: project1.id,
+      userId: teamUser1.id,
+      role: 'Lead Developer',
+    },
+  });
+
+  await prisma.projectTeamMember.create({
+    data: {
+      projectId: project1.id,
+      userId: teamUser2.id,
+      role: 'UI Designer',
+    },
+  });
+  
+  await prisma.projectTeamMember.create({
+    data: {
+      projectId: project2.id,
+      userId: teamUser2.id,
+      role: 'Designer',
+    },
+  });
+  
+  await prisma.projectTeamMember.create({
+    data: {
+      projectId: project2.id,
+      userId: teamUser3.id,
+      role: 'Testing Engineer',
+    },
+  });
+  
+  await prisma.projectTeamMember.create({
+    data: {
+      projectId: project3.id,
+      userId: teamUser1.id,
+      role: 'Security Specialist',
+    },
+  });
+
+  // Create tasks
+  console.log('Creating tasks...');
+>>>>>>> 19c5ecfd87b00038e9b5c8cbfb453775b70bee74
   
   // Project 1 Tasks
   const task1_1 = await prisma.task.create({
@@ -298,6 +345,28 @@ async function main() {
       updatedAt: new Date('2024-03-18'),
     },
   });
+<<<<<<< HEAD
+=======
+
+  // Project 3 Tasks
+  const task3_1 = await prisma.task.create({
+    data: {
+      title: 'Aadhaar API Security Analysis',
+      description: 'Conduct security analysis of the Aadhaar API integration points and identify potential vulnerabilities.',
+      status: 'NOT_STARTED',
+      priority: 'HIGH',
+      deadline: new Date('2024-05-15'),
+      estimatedHours: 20,
+      actualHours: 0,
+      tags: 'security,analysis,aadhaar',
+      projectId: project3.id,
+      assigneeId: teamUser1.id,
+      creatorId: adminUser.id,
+      createdAt: new Date('2024-03-18'),
+      updatedAt: new Date('2024-03-18'),
+    },
+  });
+>>>>>>> 19c5ecfd87b00038e9b5c8cbfb453775b70bee74
 
   // Seed comments
   console.log('Seeding comments...');
@@ -386,6 +455,26 @@ async function main() {
       taskId: task2_1.id,
       userId: teamUser2.id,
       createdAt: new Date('2024-03-01'),
+<<<<<<< HEAD
+=======
+      updatedAt: new Date('2024-03-01'),
+    },
+  });
+
+  await prisma.timeEntry.create({
+    data: {
+      description: 'Mandi API documentation review',
+      minutes: 120, // 2 hours
+      date: new Date('2024-03-05'),
+      startTime: new Date('2024-03-05T14:00:00Z'),
+      endTime: new Date('2024-03-05T16:00:00Z'),
+      duration: 120,
+      billable: true,
+      taskId: task2_2.id,
+      userId: teamUser1.id,
+      createdAt: new Date('2024-03-05'),
+      updatedAt: new Date('2024-03-05'),
+>>>>>>> 19c5ecfd87b00038e9b5c8cbfb453775b70bee74
     },
   });
 

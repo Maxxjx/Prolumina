@@ -3,6 +3,22 @@ import { prisma } from '../prisma';
 
 // Helper function to map Prisma tasks to our Task type
 const mapPrismaTaskToTaskType = (task: any): Task => {
+  let tags: string[] = [];
+  try {
+    if (task.tags) {
+      // Handle both JSON string and comma-separated string formats
+      try {
+        tags = JSON.parse(task.tags);
+      } catch {
+        // If JSON parsing fails, treat it as a comma-separated string
+        tags = task.tags.split(',').map((tag: string) => tag.trim());
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing tags:', error);
+    tags = [];
+  }
+
   return {
     id: task.id,
     title: task.title,
@@ -19,7 +35,7 @@ const mapPrismaTaskToTaskType = (task: any): Task => {
     createdBy: task.creatorId || '',
     created: task.createdAt.toISOString(),
     updated: task.updatedAt.toISOString(),
-    tags: task.tags ? JSON.parse(task.tags) : [],
+    tags,
     comments: task.comments ? task.comments.map((comment: any) => ({
       id: comment.id,
       taskId: task.id,
