@@ -222,7 +222,7 @@ async function main() {
       role: 'Security Specialist',
     },
   });
- 
+
   // Create tasks
   console.log('Creating tasks...');
   
@@ -317,7 +317,7 @@ async function main() {
       updatedAt: new Date('2024-03-18'),
     },
   });
-  
+
   // Project 3 Tasks
   const task3_1 = await prisma.task.create({
     data: {
@@ -446,7 +446,7 @@ async function main() {
       updatedAt: new Date('2024-03-01'),
     },
   });
-  
+
   await prisma.timeEntry.create({
     data: {
       description: 'Mandi API documentation review',

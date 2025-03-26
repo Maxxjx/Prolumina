@@ -172,9 +172,9 @@ const TimeTrackingChart: React.FC<TimeTrackingChartProps> = ({
         <Chart
           options={options}
           series={series}
-          type="area"
-          height={height}
-        />
+              type="area"
+              height={height}
+            />
       </CardContent>
     </Card>
   );

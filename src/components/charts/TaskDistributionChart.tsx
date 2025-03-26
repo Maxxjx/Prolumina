@@ -76,9 +76,9 @@ const TaskDistributionChart: React.FC<TaskDistributionChartProps> = ({
       }
     },
     responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: {
+        breakpoint: 480,
+        options: {
+          chart: {
           width: 200
         },
         legend: {
@@ -98,9 +98,9 @@ const TaskDistributionChart: React.FC<TaskDistributionChartProps> = ({
         <Chart
           options={options}
           series={series}
-          type="donut"
-          height={height}
-        />
+                type="donut"
+                height={height}
+              />
       </CardContent>
     </Card>
   );
