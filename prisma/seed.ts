@@ -8,13 +8,12 @@ async function main() {
 
   // Clear existing data
   console.log('Clearing existing data...');
-  await prisma.activityLog.deleteMany();
   await prisma.notification.deleteMany();
+  await prisma.activityLog.deleteMany();
   await prisma.timeEntry.deleteMany();
   await prisma.attachment.deleteMany();
   await prisma.comment.deleteMany();
   await prisma.task.deleteMany();
-  await prisma.projectTeamMember.deleteMany();
   await prisma.project.deleteMany();
   await prisma.user.deleteMany();
 
@@ -25,6 +24,7 @@ async function main() {
   const adminPassword = await hash('admin1234', 10);
   const adminUser = await prisma.user.create({
     data: {
+      id: '1',
       name: 'Rajesh Sharma',
       email: 'admin@projectpulse.com',
       password: adminPassword,
@@ -41,6 +41,7 @@ async function main() {
   const teamPassword = await hash('team1234', 10);
   const teamUser1 = await prisma.user.create({
     data: {
+      id: '2',
       name: 'Priya Patel',
       email: 'priya@projectpulse.com',
       password: teamPassword,
@@ -55,6 +56,7 @@ async function main() {
 
   const teamUser2 = await prisma.user.create({
     data: {
+      id: '3',
       name: 'Vikram Singh',
       email: 'vikram@projectpulse.com',
       password: teamPassword,
@@ -69,6 +71,7 @@ async function main() {
 
   const teamUser3 = await prisma.user.create({
     data: {
+      id: '4',
       name: 'Ananya Desai',
       email: 'ananya@projectpulse.com',
       password: teamPassword,
@@ -85,6 +88,7 @@ async function main() {
   const clientPassword = await hash('client1234', 10);
   const clientUser1 = await prisma.user.create({
     data: {
+      id: '5',
       name: 'Arjun Mehta',
       email: 'arjun@tataprojects.com',
       password: clientPassword,
@@ -99,6 +103,7 @@ async function main() {
 
   const clientUser2 = await prisma.user.create({
     data: {
+      id: '6',
       name: 'Deepika Reddy',
       email: 'deepika@reliancetech.com',
       password: clientPassword,
@@ -115,6 +120,7 @@ async function main() {
   const demoPassword = await hash('demo1234', 10);
   const demoUser = await prisma.user.create({
     data: {
+      id: '7',
       name: 'Demo User',
       email: 'demo@projectpulse.com',
       password: demoPassword,
@@ -131,17 +137,23 @@ async function main() {
     data: {
       name: 'Mumbai Metro Line Integration',
       description: 'Develop a software solution to integrate ticketing systems for the Mumbai Metro with mobile payment platforms including UPI, Paytm, and PhonePe.',
-      status: 'IN_PROGRESS',
+      status: 'In Progress',
       progress: 65,
       startDate: new Date('2024-01-15'),
       deadline: new Date('2024-06-30'),
       budget: 2500000,
       spent: 1625000,
-      priority: 'HIGH',
+      priority: 'High',
       tags: 'transportation,mobile-payments,infrastructure,mumbai',
       clientId: clientUser1.id,
       createdAt: new Date('2024-01-10'),
       updatedAt: new Date('2024-03-15'),
+      team: {
+        connect: [
+          { id: teamUser1.id },
+          { id: teamUser2.id }
+        ]
+      }
     },
   });
 
@@ -149,17 +161,23 @@ async function main() {
     data: {
       name: 'SmartFarmer Agricultural App',
       description: 'Create a mobile application to help farmers across rural India get real-time weather forecasts, crop pricing information, and government scheme updates in 12 regional languages.',
-      status: 'IN_PROGRESS',
+      status: 'In Progress',
       progress: 40,
       startDate: new Date('2024-02-01'),
       deadline: new Date('2024-08-15'),
       budget: 1800000,
       spent: 720000,
-      priority: 'MEDIUM',
+      priority: 'Medium',
       tags: 'agriculture,rural-tech,mobile-app,multilingual',
       clientId: clientUser2.id,
       createdAt: new Date('2024-01-25'),
       updatedAt: new Date('2024-03-20'),
+      team: {
+        connect: [
+          { id: teamUser2.id },
+          { id: teamUser3.id }
+        ]
+      }
     },
   });
 
@@ -167,72 +185,35 @@ async function main() {
     data: {
       name: 'Aadhaar Integration System',
       description: 'Develop an API framework to securely integrate Aadhaar verification into enterprise applications while ensuring compliance with privacy regulations.',
-      status: 'NOT_STARTED',
+      status: 'Not Started',
       progress: 0,
       startDate: new Date('2024-04-01'),
       deadline: new Date('2024-09-30'),
       budget: 3200000,
       spent: 0,
-      priority: 'HIGH',
+      priority: 'High',
       tags: 'aadhaar,security,compliance,api',
       clientId: clientUser1.id,
       createdAt: new Date('2024-03-15'),
       updatedAt: new Date('2024-03-15'),
+      team: {
+        connect: [
+          { id: teamUser1.id }
+        ]
+      }
     },
   });
 
-  // Add team members to projects
-  console.log('Adding team members to projects...');
-  await prisma.projectTeamMember.create({
-    data: {
-      projectId: project1.id,
-      userId: teamUser1.id,
-      role: 'Lead Developer',
-    },
-  });
-
-  await prisma.projectTeamMember.create({
-    data: {
-      projectId: project1.id,
-      userId: teamUser2.id,
-      role: 'UI Designer',
-    },
-  });
-  
-  await prisma.projectTeamMember.create({
-    data: {
-      projectId: project2.id,
-      userId: teamUser2.id,
-      role: 'Designer',
-    },
-  });
-  
-  await prisma.projectTeamMember.create({
-    data: {
-      projectId: project2.id,
-      userId: teamUser3.id,
-      role: 'Testing Engineer',
-    },
-  });
-  
-  await prisma.projectTeamMember.create({
-    data: {
-      projectId: project3.id,
-      userId: teamUser1.id,
-      role: 'Security Specialist',
-    },
-  });
- 
-  // Create tasks
-  console.log('Creating tasks...');
+  // Seed tasks
+  console.log('Seeding tasks...');
   
   // Project 1 Tasks
   const task1_1 = await prisma.task.create({
     data: {
       title: 'UPI Payment Gateway Integration',
       description: 'Implement integration with major UPI providers including BHIM, Google Pay, and PhonePe for the Mumbai Metro ticketing system.',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
+      status: 'In Progress',
+      priority: 'High',
       deadline: new Date('2024-04-15'),
       estimatedHours: 40,
       actualHours: 25,
@@ -249,8 +230,8 @@ async function main() {
     data: {
       title: 'Design Metro Pass QR Code System',
       description: 'Create a secure QR code system for digital metro passes that can be scanned at entry gates.',
-      status: 'COMPLETED',
-      priority: 'MEDIUM',
+      status: 'Completed',
+      priority: 'Medium',
       deadline: new Date('2024-03-01'),
       estimatedHours: 25,
       actualHours: 22,
@@ -267,8 +248,8 @@ async function main() {
     data: {
       title: 'User Testing at Andheri Station',
       description: 'Conduct user testing of the mobile payment system with real commuters at Andheri Metro Station.',
-      status: 'NOT_STARTED',
-      priority: 'MEDIUM',
+      status: 'Not Started',
+      priority: 'Medium',
       deadline: new Date('2024-05-10'),
       estimatedHours: 15,
       actualHours: 0,
@@ -286,8 +267,8 @@ async function main() {
     data: {
       title: 'Hindi Language Implementation',
       description: 'Implement Hindi language support in the SmartFarmer app, including all UI elements and content.',
-      status: 'COMPLETED',
-      priority: 'HIGH',
+      status: 'Completed',
+      priority: 'High',
       deadline: new Date('2024-03-15'),
       estimatedHours: 30,
       actualHours: 28,
@@ -304,8 +285,8 @@ async function main() {
     data: {
       title: 'Mandi Price API Integration',
       description: 'Integrate with government Mandi price APIs to provide real-time crop price information to farmers.',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
+      status: 'In Progress',
+      priority: 'High',
       deadline: new Date('2024-04-20'),
       estimatedHours: 35,
       actualHours: 20,
@@ -317,28 +298,9 @@ async function main() {
       updatedAt: new Date('2024-03-18'),
     },
   });
-  
-  // Project 3 Tasks
-  const task3_1 = await prisma.task.create({
-    data: {
-      title: 'Aadhaar API Security Analysis',
-      description: 'Conduct security analysis of the Aadhaar API integration points and identify potential vulnerabilities.',
-      status: 'NOT_STARTED',
-      priority: 'HIGH',
-      deadline: new Date('2024-05-15'),
-      estimatedHours: 20,
-      actualHours: 0,
-      tags: 'security,analysis,aadhaar',
-      projectId: project3.id,
-      assigneeId: teamUser1.id,
-      creatorId: adminUser.id,
-      createdAt: new Date('2024-03-18'),
-      updatedAt: new Date('2024-03-18'),
-    },
-  });
 
-  // Create comments
-  console.log('Creating comments...');
+  // Seed comments
+  console.log('Seeding comments...');
   
   await prisma.comment.create({
     data: {
@@ -380,22 +342,17 @@ async function main() {
     },
   });
 
-  // Create time entries
-  console.log('Creating time entries...');
+  // Seed time entries
+  console.log('Seeding time entries...');
   
   await prisma.timeEntry.create({
     data: {
       description: 'Implemented Google Pay integration',
       minutes: 360, // 6 hours
       date: new Date('2024-02-10'),
-      startTime: new Date('2024-02-10T09:00:00Z'),
-      endTime: new Date('2024-02-10T15:00:00Z'),
-      duration: 360,
-      billable: true,
       taskId: task1_1.id,
       userId: teamUser1.id,
       createdAt: new Date('2024-02-10'),
-      updatedAt: new Date('2024-02-10'),
     },
   });
 
@@ -404,14 +361,9 @@ async function main() {
       description: 'Testing UPI transaction flow',
       minutes: 240, // 4 hours
       date: new Date('2024-02-12'),
-      startTime: new Date('2024-02-12T10:00:00Z'),
-      endTime: new Date('2024-02-12T14:00:00Z'),
-      duration: 240,
-      billable: true,
       taskId: task1_1.id,
       userId: teamUser1.id,
       createdAt: new Date('2024-02-12'),
-      updatedAt: new Date('2024-02-12'),
     },
   });
 
@@ -420,14 +372,9 @@ async function main() {
       description: 'QR code encryption implementation',
       minutes: 300, // 5 hours
       date: new Date('2024-02-20'),
-      startTime: new Date('2024-02-20T08:30:00Z'),
-      endTime: new Date('2024-02-20T13:30:00Z'),
-      duration: 300,
-      billable: true,
       taskId: task1_2.id,
       userId: teamUser2.id,
       createdAt: new Date('2024-02-20'),
-      updatedAt: new Date('2024-02-20'),
     },
   });
 
@@ -436,42 +383,21 @@ async function main() {
       description: 'Hindi UI translation',
       minutes: 480, // 8 hours
       date: new Date('2024-03-01'),
-      startTime: new Date('2024-03-01T09:00:00Z'),
-      endTime: new Date('2024-03-01T17:00:00Z'),
-      duration: 480,
-      billable: true,
       taskId: task2_1.id,
       userId: teamUser2.id,
       createdAt: new Date('2024-03-01'),
-      updatedAt: new Date('2024-03-01'),
-    },
-  });
-  
-  await prisma.timeEntry.create({
-    data: {
-      description: 'Mandi API documentation review',
-      minutes: 120, // 2 hours
-      date: new Date('2024-03-05'),
-      startTime: new Date('2024-03-05T14:00:00Z'),
-      endTime: new Date('2024-03-05T16:00:00Z'),
-      duration: 120,
-      billable: true,
-      taskId: task2_2.id,
-      userId: teamUser1.id,
-      createdAt: new Date('2024-03-05'),
-      updatedAt: new Date('2024-03-05'),
     },
   });
 
-  // Create notifications
-  console.log('Creating notifications...');
+  // Seed notifications
+  console.log('Seeding notifications...');
   
   await prisma.notification.create({
     data: {
       title: 'Task Assigned',
       message: 'You have been assigned to implement UPI Payment Gateway Integration.',
-      type: 'TASK_ASSIGNED',
-      entityType: 'TASK',
+      type: 'task_assigned',
+      entityType: 'task',
       entityId: task1_1.id,
       read: true,
       actionUrl: `/dashboard/tasks/${task1_1.id}`,
@@ -484,8 +410,8 @@ async function main() {
     data: {
       title: 'Task Completed',
       message: 'QR Code System design has been marked as completed.',
-      type: 'TASK_COMPLETED',
-      entityType: 'TASK',
+      type: 'task_completed',
+      entityType: 'task',
       entityId: task1_2.id,
       read: false,
       actionUrl: `/dashboard/tasks/${task1_2.id}`,
@@ -498,8 +424,8 @@ async function main() {
     data: {
       title: 'Comment Added',
       message: 'Rajesh Sharma commented on UPI Payment Gateway Integration.',
-      type: 'COMMENT_ADDED',
-      entityType: 'TASK',
+      type: 'comment_added',
+      entityType: 'task',
       entityId: task1_1.id,
       read: false,
       actionUrl: `/dashboard/tasks/${task1_1.id}`,
@@ -508,16 +434,15 @@ async function main() {
     },
   });
 
-  // Create activity logs
-  console.log('Creating activity logs...');
+  // Seed activity logs
+  console.log('Seeding activity logs...');
   
   await prisma.activityLog.create({
     data: {
-      action: 'CREATED',
-      entityType: 'PROJECT',
+      action: 'created',
+      entityType: 'project',
       entityId: project1.id.toString(),
       entityName: 'Mumbai Metro Line Integration',
-      details: 'Created new project',
       timestamp: new Date('2024-01-10'),
       userId: adminUser.id,
     },
@@ -525,11 +450,10 @@ async function main() {
 
   await prisma.activityLog.create({
     data: {
-      action: 'CREATED',
-      entityType: 'TASK',
+      action: 'created',
+      entityType: 'task',
       entityId: task1_1.id.toString(),
       entityName: 'UPI Payment Gateway Integration',
-      details: 'Created new task',
       timestamp: new Date('2024-01-20'),
       userId: adminUser.id,
     },
@@ -537,11 +461,10 @@ async function main() {
 
   await prisma.activityLog.create({
     data: {
-      action: 'COMPLETED',
-      entityType: 'TASK',
+      action: 'completed',
+      entityType: 'task',
       entityId: task1_2.id.toString(),
       entityName: 'Design Metro Pass QR Code System',
-      details: 'Completed task',
       timestamp: new Date('2024-03-01'),
       userId: teamUser2.id,
     },
@@ -549,37 +472,13 @@ async function main() {
 
   await prisma.activityLog.create({
     data: {
-      action: 'UPDATED',
-      entityType: 'PROJECT',
+      action: 'updated',
+      entityType: 'project',
       entityId: project1.id.toString(),
       entityName: 'Mumbai Metro Line Integration',
       details: 'Updated project progress to 65%',
       timestamp: new Date('2024-03-15'),
       userId: adminUser.id,
-    },
-  });
-  
-  await prisma.activityLog.create({
-    data: {
-      action: 'CREATED',
-      entityType: 'PROJECT',
-      entityId: project2.id.toString(),
-      entityName: 'SmartFarmer Agricultural App',
-      details: 'Created new project',
-      timestamp: new Date('2024-01-25'),
-      userId: adminUser.id,
-    },
-  });
-  
-  await prisma.activityLog.create({
-    data: {
-      action: 'COMPLETED',
-      entityType: 'TASK',
-      entityId: task2_1.id.toString(),
-      entityName: 'Hindi Language Implementation',
-      details: 'Completed Hindi language implementation',
-      timestamp: new Date('2024-03-14'),
-      userId: teamUser2.id,
     },
   });
 

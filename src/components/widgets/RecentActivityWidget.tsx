@@ -1,11 +1,9 @@
 'use client';
 
-import React from 'react';
 import { useState, useEffect } from 'react';
 import { DashboardWidget, ActivityLog } from '@/lib/data/types';
 import BaseWidget from './BaseWidget';
 import Link from 'next/link';
-import { formatRelativeTime } from '@/lib/utils/date';
 
 interface RecentActivityWidgetProps {
   widget: DashboardWidget;
@@ -60,6 +58,29 @@ export default function RecentActivityWidget({ widget, isDragging }: RecentActiv
     
     getRecentActivities();
   }, []);
+  
+  // Format activity date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 60) {
+      return 'just now';
+    } else if (diffMins < 60) {
+      return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
   
   // Get activity icon based on action
   const getActivityIcon = (action: string) => {
@@ -125,9 +146,9 @@ export default function RecentActivityWidget({ widget, isDragging }: RecentActiv
                   {activity.userName} {activity.action} {activity.entityType}{' '}
                   <span className="text-[#8B5CF6]">{activity.entityName}</span>
                 </p>
-                <div className="text-sm text-gray-400">
-                  {formatRelativeTime(activity.timestamp)}
-                </div>
+                <p className="text-xs text-gray-400">
+                  {formatDate(activity.timestamp)}
+                </p>
               </div>
             </div>
           ))}
