@@ -49,7 +49,7 @@ export default function Sidebar() {
     },
     {
       title: "Team",
-      href: "/dashboard/team",
+      href: "/dashboard/users",
       icon: <Users className="h-5 w-5" />,
       roles: ["ADMIN"],
     },

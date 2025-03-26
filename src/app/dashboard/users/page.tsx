@@ -1,81 +1,56 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-// Sample user data
-const sampleUsers = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'admin',
-    status: 'active',
-    lastActive: '2023-07-15T10:30:00Z',
-    projects: 5,
-    tasks: 12
-  },
-  {
-    id: 2,
-    name: 'Sarah Smith',
-    email: 'sarah@example.com',
-    role: 'team',
-    status: 'active',
-    lastActive: '2023-07-14T16:45:00Z',
-    projects: 3,
-    tasks: 8
-  },
-  {
-    id: 3,
-    name: 'Michael Chen',
-    email: 'michael@example.com',
-    role: 'team',
-    status: 'active',
-    lastActive: '2023-07-15T09:15:00Z',
-    projects: 2,
-    tasks: 15
-  },
-  {
-    id: 4,
-    name: 'Emily Taylor',
-    email: 'emily@example.com',
-    role: 'team',
-    status: 'inactive',
-    lastActive: '2023-07-10T11:20:00Z',
-    projects: 1,
-    tasks: 5
-  },
-  {
-    id: 5,
-    name: 'Robert Johnson',
-    email: 'robert@example.com',
-    role: 'client',
-    status: 'active',
-    lastActive: '2023-07-13T14:30:00Z',
-    projects: 2,
-    tasks: 0
-  },
-  {
-    id: 6,
-    name: 'Lisa Brown',
-    email: 'lisa@example.com',
-    role: 'client',
-    status: 'active',
-    lastActive: '2023-07-12T10:00:00Z',
-    projects: 1,
-    tasks: 0
-  }
-];
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  lastActive: string;
+  projects: number;
+  tasks: number;
+}
 
 export default function UserManagementView() {
   const { data: session } = useSession();
   const router = useRouter();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/users');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        
+        const data = await response.json();
+        setUsers(data);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError('Failed to load users. Please try again later.');
+        // Fallback to empty array if API fails
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchUsers();
+  }, []);
 
   // Redirect if not admin
   if (session?.user?.role !== 'admin') {
@@ -90,7 +65,7 @@ export default function UserManagementView() {
   }
 
   // Filter users based on search term, role, and status
-  const filteredUsers = sampleUsers.filter(user => {
+  const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -205,94 +180,135 @@ export default function UserManagementView() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-[#111827] rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-[#1F2937]">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  User
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Role
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Last Active
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Projects
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Tasks
-                </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-[#1F2937]">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-[#8B5CF6] rounded-full flex items-center justify-center text-white font-medium">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium">{user.name}</div>
-                          <div className="text-sm text-gray-400">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(user.status)}`}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {formatDate(user.lastActive)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user.projects}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user.tasks}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => setEditingUser(user)}
-                        className="text-[#8B5CF6] hover:text-[#A78BFA] mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-red-500 hover:text-red-400"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-400">
-                    No users found matching your criteria.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {loading && (
+        <div className="bg-[#111827] rounded-lg p-8 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8B5CF6]"></div>
         </div>
-      </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-lg mb-6">
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-2 text-sm underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Only show table if not loading and no error */}
+      {!loading && !error && (
+        <>
+          {/* User count */}
+          <div className="mb-4 text-gray-400">
+            Showing {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}
+          </div>
+
+          {/* No users message */}
+          {filteredUsers.length === 0 && (
+            <div className="bg-[#111827] rounded-lg p-6 text-center">
+              <p className="text-gray-400 mb-4">No users match your filters</p>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setRoleFilter('All');
+                  setStatusFilter('All');
+                }}
+                className="text-[#8B5CF6] hover:text-[#A78BFA] transition"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+
+          {/* Users table */}
+          {filteredUsers.length > 0 && (
+            <div className="bg-[#111827] rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-[#1F2937]">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Last Active
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Projects
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Tasks
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-[#1F2937]">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 bg-[#8B5CF6] rounded-full flex items-center justify-center text-white font-medium">
+                              {user.name.charAt(0)}
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium">{user.name}</div>
+                              <div className="text-sm text-gray-400">{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
+                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(user.status)}`}>
+                            {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {formatDate(user.lastActive)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {user.projects}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {user.tasks}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => setEditingUser(user)}
+                            className="text-[#8B5CF6] hover:text-[#A78BFA] mr-4"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="text-red-500 hover:text-red-400"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Add User Modal - In a real app, this would be a separate component */}
       {showAddUserModal && (
