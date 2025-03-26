@@ -5,7 +5,15 @@ import dynamic from 'next/dynamic';
 import { theme } from '@/lib/utils/theme';
 
 // Dynamically import ApexCharts with no SSR to avoid hydration issues
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const Chart = dynamic(() => import('react-apexcharts'), { 
+  ssr: false,
+  loading: () => (
+    <div className="animate-pulse flex flex-col items-center gap-2">
+      <div className="h-8 w-8 rounded-full border-2 border-t-transparent border-purple-500 animate-spin"></div>
+      <div className="text-gray-400 text-sm">Loading chart...</div>
+    </div>
+  )
+});
 
 interface ChartWrapperProps {
   type: 'line' | 'area' | 'bar' | 'pie' | 'donut' | 'radialBar' | 'scatter' | 'bubble' | 'heatmap' | 'candlestick' | 'boxPlot' | 'radar' | 'polarArea' | 'rangeBar';
@@ -14,6 +22,7 @@ interface ChartWrapperProps {
   width?: string | number;
   height?: string | number;
   className?: string;
+  enableExport?: boolean;
 }
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
@@ -23,32 +32,56 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   width = '100%',
   height = 350,
   className = '',
+  enableExport = false,
 }) => {
-  // State to track if component is mounted (client-side)
   const [mounted, setMounted] = useState(false);
 
-  // Set mounted to true on client-side
   useEffect(() => {
     setMounted(true);
+    return () => setMounted(false);
   }, []);
 
   // Merge default options with provided options
   const defaultOptions: ApexCharts.ApexOptions = {
     theme: {
       mode: 'dark',
+      palette: 'palette1',
     },
     chart: {
-      background: 'transparent',
+      background: theme.chartTheme.background,
+      foreColor: theme.chartTheme.text,
       fontFamily: theme.typography.fontFamily.sans,
       toolbar: {
-        show: false,
+        show: enableExport,
+        tools: {
+          download: true,
+          selection: false,
+          zoom: false,
+          zoomin: false,
+          zoomout: false,
+          pan: false,
+          reset: false,
+        },
+        export: {
+          csv: {
+            filename: undefined,
+            columnDelimiter: ',',
+            headerCategory: 'Category',
+            headerValue: 'Value',
+          },
+          svg: {
+            filename: undefined,
+          },
+          png: {
+            filename: undefined,
+          }
+        },
       },
       zoom: {
         enabled: false,
       },
       animations: {
         enabled: true,
-        easing: 'easeinout',
         speed: 800,
         animateGradually: {
           enabled: true,
@@ -60,21 +93,25 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         }
       },
     },
+    colors: theme.chartTheme.colors,
     tooltip: {
       theme: 'dark',
       style: {
         fontSize: theme.typography.fontSize.sm,
         fontFamily: theme.typography.fontFamily.sans,
       },
-      background: {
-        color: theme.chartTheme.tooltip.background,
-        borderColor: theme.chartTheme.tooltip.border,
-      },
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        return `<div class="bg-gray-800 border border-gray-700 p-2 rounded-lg shadow-lg">
+          <div class="text-gray-200">${w.globals.labels[dataPointIndex]}</div>
+          <div class="text-gray-400">${series[seriesIndex][dataPointIndex]}</div>
+        </div>`;
+      }
     },
-    colors: theme.chartTheme.colors,
     grid: {
+      show: true,
       borderColor: theme.chartTheme.grid,
       strokeDashArray: 4,
+      position: 'back',
       xaxis: {
         lines: {
           show: true
@@ -86,15 +123,16 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         }
       },
       padding: {
-        top: 0,
-        right: 0,
+        top: enableExport ? 20 : 0,
+        right: 8,
         bottom: 0,
-        left: 10
+        left: 12
       },
     },
     stroke: {
       curve: 'smooth',
       width: 3,
+      lineCap: 'round',
     },
     xaxis: {
       labels: {
@@ -105,10 +143,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         }
       },
       axisBorder: {
-        show: false,
+        show: true,
+        color: theme.chartTheme.grid,
       },
       axisTicks: {
-        show: false,
+        show: true,
+        color: theme.chartTheme.grid,
       },
     },
     yaxis: {
@@ -122,22 +162,72 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     },
     legend: {
       position: 'top',
-      horizontalAlign: 'right',
+      horizontalAlign: 'left',
+      offsetY: enableExport ? 12 : -4,
       labels: {
         colors: theme.chartTheme.text,
+      },
+      markers: {
+        size: 8,
+        shape: 'circle',
+        offsetX: 2,
       },
       itemMargin: {
         horizontal: 12,
         vertical: 5
       },
-      fontFamily: theme.typography.fontFamily.sans,
-      fontSize: theme.typography.fontSize.sm,
+      onItemClick: {
+        toggleDataSeries: true
+      },
+      onItemHover: {
+        highlightDataSeries: true
+      },
+    },
+    dataLabels: {
+      style: {
+        fontSize: theme.typography.fontSize.sm,
+        fontFamily: theme.typography.fontFamily.sans,
+        colors: [theme.chartTheme.text]
+      }
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 4,
+        columnWidth: '60%',
+        dataLabels: {
+          position: 'top'
+        },
+      },
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              fontSize: theme.typography.fontSize.base,
+              fontFamily: theme.typography.fontFamily.sans,
+              color: theme.chartTheme.text,
+            },
+            value: {
+              show: true,
+              fontSize: theme.typography.fontSize.xl,
+              fontFamily: theme.typography.fontFamily.sans,
+              color: theme.chartTheme.text,
+            },
+            total: {
+              show: true,
+              fontSize: theme.typography.fontSize.base,
+              fontFamily: theme.typography.fontFamily.sans,
+              color: theme.chartTheme.text,
+            }
+          }
+        }
+      }
     },
     ...options,
   };
 
-  if (!mounted) {
-    // Return a placeholder with the same dimensions during SSR
+  if (typeof window === 'undefined' || !mounted) {
     return (
       <div 
         className={`flex items-center justify-center bg-gray-900 rounded-xl shadow-md ${className}`} 

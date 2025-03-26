@@ -13,6 +13,7 @@ interface TimeTrackingChartProps {
   height?: number;
   title?: string;
   description?: string;
+  enableExport?: boolean;
 }
 
 const TimeTrackingChart: React.FC<TimeTrackingChartProps> = ({
@@ -21,7 +22,8 @@ const TimeTrackingChart: React.FC<TimeTrackingChartProps> = ({
   users,
   height = 350,
   title = 'Time Tracking',
-  description = 'Analysis of time spent on projects'
+  description = 'Analysis of time spent on projects',
+  enableExport = false
 }) => {
   // Ensure all time entries have hours calculated from minutes if not already present
   const entriesWithHours = timeEntries.map(entry => ({
@@ -204,6 +206,7 @@ if (Array.isArray(users)) {
               series={pieSeries}
               options={pieChartOptions}
               height={height}
+              enableExport={enableExport}
             />
           </div>
           <div>
@@ -213,6 +216,7 @@ if (Array.isArray(users)) {
               series={areaSeries}
               options={areaChartOptions}
               height={height}
+              enableExport={enableExport}
             />
           </div>
         </div>

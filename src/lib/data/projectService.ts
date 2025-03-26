@@ -3,17 +3,30 @@ import { prisma } from '../prisma';
 
 // Helper function to map Prisma project to our Project type
 const mapPrismaProjectToProjectType = (project: any): Project => {
-  let tags = [];
-  try {
-    if (project.tags) {
-      tags = JSON.parse(project.tags);
+  let tags: string[] = [];
+  
+  if (project.tags) {
+    // First try parsing as JSON if it looks like a JSON array
+    if (project.tags.trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(project.tags);
+        if (Array.isArray(parsed)) {
+          tags = parsed;
+        } else {
+          // If parsed but not an array, treat as comma-separated
+          tags = project.tags.split(',').map(tag => tag.trim());
+        }
+      } catch (error) {
+        // If JSON parsing fails, treat as comma-separated
+        tags = project.tags.split(',').map(tag => tag.trim());
+        console.error('Tag parsing failed, treating as comma-separated:', error);
+      }
+    } else {
+      // If doesn't look like JSON array, treat as comma-separated
+      tags = project.tags.split(',').map(tag => tag.trim());
     }
-  } catch (error) {
-    console.error('Error parsing tags:', error);
-    // Handle non-JSON tags by treating as a single tag string
-    if (project.tags) {
-      tags = [project.tags];
-    }
+    // Filter out any empty tags
+    tags = tags.filter(tag => tag.length > 0);
   }
 
   return {
@@ -33,6 +46,31 @@ const mapPrismaProjectToProjectType = (project: any): Project => {
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString()
   };
+};
+
+// Helper function to normalize tags input
+const normalizeProjectTags = (tags: any): string | null => {
+  if (!tags) return null;
+  
+  // If it's already a string, parse it if JSON or split if comma-separated
+  if (typeof tags === 'string') {
+    try {
+      // Check if it's already valid JSON
+      JSON.parse(tags);
+      return tags;
+    } catch {
+      // If not JSON, split by comma and convert to JSON
+      return JSON.stringify(tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0));
+    }
+  }
+  
+  // If it's an array, stringify it
+  if (Array.isArray(tags)) {
+    return JSON.stringify(tags.filter(tag => tag && tag.length > 0));
+  }
+  
+  // If it's anything else, convert to string and treat as single tag
+  return JSON.stringify([String(tags)]);
 };
 
 export const projectService = {
@@ -59,6 +97,73 @@ export const projectService = {
     if (!project) return null;
     
     return mapPrismaProjectToProjectType(project);
+  },
+
+  createProject: async (projectData: any): Promise<Project> => {
+    const project = await prisma.project.create({
+      data: {
+        name: projectData.name,
+        description: projectData.description,
+        status: projectData.status || 'NOT_STARTED',
+        priority: projectData.priority || 'MEDIUM',
+        progress: projectData.progress || 0,
+        startDate: projectData.startDate ? new Date(projectData.startDate) : new Date(),
+        deadline: projectData.deadline ? new Date(projectData.deadline) : new Date(),
+        budget: projectData.budget || 0,
+        spent: projectData.spent || 0,
+        clientId: projectData.clientId,
+        tags: normalizeProjectTags(projectData.tags),
+        team: {
+          connect: projectData.team?.map((id: string) => ({ id })) || []
+        }
+      },
+      include: {
+        team: true,
+        client: true
+      }
+    });
+
+    return mapPrismaProjectToProjectType(project);
+  },
+
+  updateProject: async (id: number, projectData: any): Promise<Project | null> => {
+    const project = await prisma.project.update({
+      where: { id },
+      data: {
+        name: projectData.name,
+        description: projectData.description,
+        status: projectData.status,
+        priority: projectData.priority,
+        progress: projectData.progress,
+        startDate: projectData.startDate ? new Date(projectData.startDate) : undefined,
+        deadline: projectData.deadline ? new Date(projectData.deadline) : undefined,
+        budget: projectData.budget,
+        spent: projectData.spent,
+        clientId: projectData.clientId,
+        tags: normalizeProjectTags(projectData.tags),
+        team: {
+          set: projectData.team?.map((id: string) => ({ id })) || []
+        }
+      },
+      include: {
+        team: true,
+        client: true
+      }
+    });
+
+    return mapPrismaProjectToProjectType(project);
+  },
+
+  deleteProject: async (id: number): Promise<boolean> => {
+    try {
+      await prisma.project.delete({
+        where: { id }
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      return false;
+    }
   },
   
   getProjectsByClient: async (clientId: string): Promise<Project[]> => {
@@ -89,206 +194,5 @@ export const projectService = {
     });
     
     return projects.map(mapPrismaProjectToProjectType);
-  },
-  
-  createProject: async (
-    projectData: any,
-    creatorId: string,
-    creatorName: string
-  ): Promise<Project | null> => {
-    // Create the project
-    const newProject = await prisma.project.create({
-      data: {
-        name: projectData.name,
-        description: projectData.description || '',
-        status: projectData.status,
-        priority: projectData.priority,
-        progress: projectData.progress || 0,
-        startDate: projectData.startDate ? new Date(projectData.startDate) : new Date(),
-        deadline: projectData.deadline ? new Date(projectData.deadline) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default to 30 days from now
-        budget: projectData.budget || null,
-        spent: projectData.spent || 0,
-        clientId: projectData.clientId || null,
-        tags: projectData.tags ? JSON.stringify(projectData.tags) : null,
-        // Connect team members if provided
-        team: projectData.team && projectData.team.length > 0 
-          ? { 
-              connect: projectData.team.map((userId: string) => ({ id: userId }))
-            } 
-          : undefined
-      }
-    });
-    
-    // Create activity log entry
-    await prisma.activityLog.create({
-      data: {
-        userId: creatorId,
-        action: `created by ${creatorName}`,
-        entityType: 'project',
-        entityId: String(newProject.id),
-        entityName: newProject.name,
-        details: `New project created with status ${newProject.status}`
-      }
-    });
-    
-    // Get the project with related data
-    const createdProject = await prisma.project.findUnique({
-      where: { id: newProject.id },
-      include: {
-        team: true,
-        client: true
-      }
-    });
-    
-    if (!createdProject) return null;
-    
-    return mapPrismaProjectToProjectType(createdProject);
-  },
-  
-  updateProject: async (
-    id: number,
-    projectData: any,
-    userId: string,
-    userName: string
-  ): Promise<Project | null> => {
-    // Check if project exists
-    const existingProject = await prisma.project.findUnique({
-      where: { id }
-    });
-    
-    if (!existingProject) {
-      return null;
-    }
-    
-    // Update the project
-    const updatedProject = await prisma.project.update({
-      where: { id },
-      data: {
-        name: projectData.name,
-        description: projectData.description,
-        status: projectData.status,
-        priority: projectData.priority,
-        progress: projectData.progress,
-        startDate: projectData.startDate ? new Date(projectData.startDate) : undefined,
-        deadline: projectData.deadline ? new Date(projectData.deadline) : undefined,
-        budget: projectData.budget,
-        spent: projectData.spent,
-        clientId: projectData.clientId,
-        tags: projectData.tags ? JSON.stringify(projectData.tags) : undefined
-      },
-      include: {
-        team: true,
-        client: true
-      }
-    });
-    
-    // Update team members if provided
-    if (projectData.team) {
-      // First disconnect all existing team members
-      await prisma.project.update({
-        where: { id },
-        data: {
-          team: {
-            set: []
-          }
-        }
-      });
-      
-      // Then connect the new team members
-      if (projectData.team.length > 0) {
-        await prisma.project.update({
-          where: { id },
-          data: {
-            team: {
-              connect: projectData.team.map((userId: string) => ({ id: userId }))
-            }
-          }
-        });
-      }
-    }
-    
-    // Create activity log entry
-    await prisma.activityLog.create({
-      data: {
-        userId,
-        action: `updated by ${userName}`,
-        entityType: 'project',
-        entityId: String(id),
-        entityName: updatedProject.name,
-        details: `Project updated with status ${updatedProject.status}`
-      }
-    });
-    
-    // Get the updated project with related data
-    const finalProject = await prisma.project.findUnique({
-      where: { id },
-      include: {
-        team: true,
-        client: true
-      }
-    });
-    
-    if (!finalProject) return null;
-    
-    return mapPrismaProjectToProjectType(finalProject);
-  },
-  
-  deleteProject: async (
-    id: number,
-    userId: string,
-    userName: string
-  ): Promise<boolean> => {
-    // Check if project exists
-    const existingProject = await prisma.project.findUnique({
-      where: { id }
-    });
-    
-    if (!existingProject) {
-      return false;
-    }
-    
-    // First delete all team members (handle foreign key constraints)
-    await prisma.projectTeamMember.deleteMany({
-      where: { projectId: id }
-    });
-    
-    // Then delete all tasks associated with this project
-    // First delete comments on those tasks
-    const tasks = await prisma.task.findMany({
-      where: { projectId: id },
-      select: { id: true }
-    });
-    
-    if (tasks.length > 0) {
-      const taskIds = tasks.map(task => task.id);
-      
-      await prisma.comment.deleteMany({
-        where: { taskId: { in: taskIds } }
-      });
-      
-      // Then delete the tasks
-      await prisma.task.deleteMany({
-        where: { projectId: id }
-      });
-    }
-    
-    // Finally delete the project
-    await prisma.project.delete({
-      where: { id }
-    });
-    
-    // Create activity log entry
-    await prisma.activityLog.create({
-      data: {
-        userId: userId,
-        action: `deleted by ${userName}`,
-        entityType: 'project',
-        entityId: String(id),
-        entityName: existingProject.name,
-        details: `Project deleted with all associated tasks`
-      }
-    });
-    
-    return true;
   }
 };

@@ -3,6 +3,30 @@ import { prisma } from '../prisma';
 
 // Helper function to map Prisma tasks to our Task type
 const mapPrismaTaskToTaskType = (task: any): Task => {
+  let tags: string[] = [];
+  if (task.tags) {
+    // First try parsing as JSON if it looks like a JSON array
+    if (task.tags.trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(task.tags);
+        if (Array.isArray(parsed)) {
+          tags = parsed;
+        } else {
+          // If parsed but not an array, treat as comma-separated
+          tags = task.tags.split(',').map(tag => tag.trim());
+        }
+      } catch (error) {
+        // If JSON parsing fails, treat as comma-separated
+        tags = task.tags.split(',').map(tag => tag.trim());
+      }
+    } else {
+      // If doesn't look like JSON array, treat as comma-separated
+      tags = task.tags.split(',').map(tag => tag.trim());
+    }
+    // Filter out any empty tags
+    tags = tags.filter(tag => tag.length > 0);
+  }
+
   return {
     id: task.id,
     title: task.title,
@@ -19,7 +43,7 @@ const mapPrismaTaskToTaskType = (task: any): Task => {
     createdBy: task.creatorId || '',
     created: task.createdAt.toISOString(),
     updated: task.updatedAt.toISOString(),
-    tags: task.tags ? JSON.parse(task.tags) : [],
+    tags,
     comments: task.comments ? task.comments.map((comment: any) => ({
       id: comment.id,
       taskId: task.id,
@@ -30,6 +54,31 @@ const mapPrismaTaskToTaskType = (task: any): Task => {
       updatedAt: comment.updatedAt.toISOString()
     })) : []
   };
+};
+
+// Helper function to normalize tags input - matches project service implementation
+const normalizeTaskTags = (tags: any): string | null => {
+  if (!tags) return null;
+  
+  // If it's already a string, parse it if JSON or split if comma-separated
+  if (typeof tags === 'string') {
+    try {
+      // Check if it's already valid JSON
+      JSON.parse(tags);
+      return tags;
+    } catch {
+      // If not JSON, split by comma and convert to JSON
+      return JSON.stringify(tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0));
+    }
+  }
+  
+  // If it's an array, stringify it
+  if (Array.isArray(tags)) {
+    return JSON.stringify(tags.filter(tag => tag && tag.length > 0));
+  }
+  
+  // If it's anything else, convert to string and treat as single tag
+  return JSON.stringify([String(tags)]);
 };
 
 export const taskService = {
@@ -133,7 +182,8 @@ export const taskService = {
         deadline: taskData.deadline ? new Date(taskData.deadline) : new Date(),
         projectId: taskData.projectId,
         assigneeId: taskData.assigneeId,
-        creatorId: creatorId
+        creatorId: creatorId,
+        tags: normalizeTaskTags(taskData.tags),
       },
       include: {
         assignee: true,
@@ -221,6 +271,7 @@ export const taskService = {
         priority: taskData.priority,
         deadline: taskData.deadline ? new Date(taskData.deadline) : undefined,
         assigneeId: taskData.assigneeId,
+        tags: normalizeTaskTags(taskData.tags),
         // Add any other fields that can be updated
       },
       include: {

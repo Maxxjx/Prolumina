@@ -10,18 +10,34 @@ interface ProjectProgressChartProps {
   height?: number;
   title?: string;
   description?: string;
+  enableExport?: boolean;
 }
 
 const ProjectProgressChart: React.FC<ProjectProgressChartProps> = ({
-  projects,
+  projects = [],
   height = 350,
   title = 'Project Progress',
-  description = 'Visual overview of project completion status'
+  description = 'Visual overview of project completion status',
+  enableExport = false
 }) => {
   
+  if (!projects.length) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center" style={{ height }}>
+          <p className="text-gray-400">No project data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Format data for the chart
   const formattedData = projects.map(project => ({
-    x: project.name,
+    x: project.name || 'Unnamed Project',
     y: project.progress || 0,
     status: project.status
   }));
@@ -33,72 +49,88 @@ const ProjectProgressChart: React.FC<ProjectProgressChartProps> = ({
       case 'IN_PROGRESS': return '#6366F1'; // indigo
       case 'ON_HOLD': return '#F59E0B'; // amber
       case 'COMPLETED': return '#10B981'; // green
-      default: return '#8B5CF6'; // purple
-    }
-  };
-
-  // Chart options
-  const options = {
-    chart: {
-      toolbar: {
-        show: true,
-      },
-    },
-    plotOptions: {
-      bar: {
-        borderRadius: 4,
-        horizontal: true,
-        distributed: false,
-        dataLabels: {
-          position: 'bottom',
-        },
-      },
-    },
-    colors: projects.map(project => getStatusColor(project.status)),
-    dataLabels: {
-      enabled: true,
-      formatter: function(val: number) {
-        return val + '%';
-      },
-      style: {
-        fontSize: '12px',
-        fontWeight: 'bold',
-        colors: ['#fff']
-      },
-      background: {
-        enabled: false
-      }
-    },
-    xaxis: {
-      categories: projects.map(project => project.name),
-      labels: {
-        formatter: function(val: string) {
-          return val;
-        }
-      },
-    },
-    yaxis: {
-      min: 0,
-      max: 100,
-      labels: {
-        formatter: function(val: number) {
-          return val + '%';
-        }
-      }
-    },
-    tooltip: {
-      y: {
-        formatter: function(val: number) {
-          return val + '% completed';
-        }
-      }
+      case 'CANCELLED': return '#EF4444'; // red
+      default: return '#CBD5E1'; // gray
     }
   };
 
   const series = [{
     name: 'Progress',
-    data: projects.map(project => project.progress || 0)
+    data: formattedData.map(d => d.y)
   }];
+
+  const options = {
+    chart: {
+      type: 'bar' as const,
+      toolbar: {
+        show: false
+      },
+      foreColor: '#64748b'
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        borderRadius: 4,
+        distributed: true,
+        dataLabels: {
+          position: 'middle'
+        }
+      }
+    },
+    colors: formattedData.map(d => getStatusColor(d.status)),
+    dataLabels: {
+      enabled: true,
+      formatter: function (val: number) {
+        return val + '%';
+      },
+      style: {
+        fontSize: '12px',
+        fontWeight: 600,
+        colors: ['#F8FAFC']
+      }
+    },
+    xaxis: {
+      categories: formattedData.map(d => d.x),
+      labels: {
+        style: {
+          fontSize: '12px'
+        }
+      },
+      min: 0,
+      max: 100
+    },
+    yaxis: {
+      labels: {
+        style: {
+          fontSize: '12px'
+        }
+      }
+    },
+    tooltip: {
+      theme: 'dark',
+      y: {
+        formatter: function(val: number) {
+          return val + '% complete';
+        }
+      }
+    },
+    legend: {
+      show: false
+    },
+    grid: {
+      borderColor: '#334155',
+      xaxis: {
+        lines: {
+          show: false
+        }
+      },
+      yaxis: {
+        lines: {
+          show: false
+        }
+      }
+    }
+  };
 
   return (
     <Card className="w-full">
@@ -112,6 +144,7 @@ const ProjectProgressChart: React.FC<ProjectProgressChartProps> = ({
           series={series}
           options={options}
           height={height}
+          enableExport={enableExport}
         />
       </CardContent>
     </Card>

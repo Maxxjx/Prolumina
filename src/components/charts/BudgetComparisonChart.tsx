@@ -8,48 +8,67 @@ import ChartWrapper from './ChartWrapper';
 
 interface BudgetComparisonChartProps {
   projects: Project[];
-  timeEntries?: TimeEntry[];
+  timeEntries: TimeEntry[];
   height?: number;
   title?: string;
   description?: string;
+  enableExport?: boolean;
 }
 
-const BudgetComparisonChart = ({
-  projects,
+const BudgetComparisonChart: React.FC<BudgetComparisonChartProps> = ({
+  projects = [],
   timeEntries = [],
   height = 350,
-  title = 'Budget vs. Actual Spending',
-  description = 'Comparison of budgeted vs actual project costs'
-}: BudgetComparisonChartProps) => {
+  title = 'Budget Comparison',
+  description = 'Comparison of budgeted vs actual costs',
+  enableExport = false
+}) => {
   
   const chartData = useMemo(() => {
-      const calculateCost = (projectId: string | number): number => {
-        const projectTimeEntries = timeEntries.filter(entry =>
-          (entry.projectId && entry.projectId.toString() === projectId.toString()) ||
-          (entry.task && entry.task.projectId.toString() === projectId.toString())
-        );
-
-        const totalHours = projectTimeEntries.reduce((sum, entry) => {
-          if ('hours' in entry && typeof entry.hours === 'number') {
-            return sum + entry.hours;
-          }
-          return sum + ((entry.minutes || 0) / 60);
-        }, 0);
-
-        const hourlyRate = 50;
-        return totalHours * hourlyRate;
-      };
-
-      const categories = projects.map((p) => p.name);
-      const budgetData = projects.map(p => p.budget || 0);
-      const spentData = projects.map(p => calculateCost(p.id));
-    
+    if (!projects.length) {
       return {
-        categories,
-        budgetData,
-        spentData,
+        categories: [],
+        budgetData: [],
+        spentData: []
       };
-    }, [projects, timeEntries]);
+    }
+
+    const calculateCost = (projectId: string | number): number => {
+      const projectTimeEntries = timeEntries.filter(entry =>
+        (entry.projectId && entry.projectId.toString() === projectId.toString()) ||
+        (entry.task && entry.task.projectId && entry.task.projectId.toString() === projectId.toString())
+      );
+
+      return projectTimeEntries.reduce((sum, entry) => {
+        const hours = 'hours' in entry ? Number(entry.hours) : Number(entry.minutes || 0) / 60;
+        return sum + (hours * 50); // Assuming ₹50 per hour rate
+      }, 0);
+    };
+
+    const categories = projects.map(p => p.name || 'Unnamed Project');
+    const budgetData = projects.map(p => Number(p.budget) || 0);
+    const spentData = projects.map(p => calculateCost(p.id));
+
+    return {
+      categories,
+      budgetData,
+      spentData
+    };
+  }, [projects, timeEntries]);
+
+  if (!projects.length) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-[350px]">
+          <p className="text-gray-400">No project data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
     const chartOptions: ApexOptions = {
       chart: {
@@ -133,6 +152,7 @@ const BudgetComparisonChart = ({
           series={series}
           options={chartOptions}
           height={height}
+          enableExport={enableExport}
         />
       </CardContent>
     </Card>

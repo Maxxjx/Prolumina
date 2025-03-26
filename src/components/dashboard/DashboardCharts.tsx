@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ProjectProgressChart,
   TaskDistributionChart,
@@ -13,8 +14,8 @@ import { useTasks } from '@/lib/hooks/useTasks';
 import { useTimeEntriesInRange } from '@/lib/hooks/useTimeTracking';
 import { useUsers } from '@/lib/hooks/useUsers';
 import { format, subDays } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from 'next-auth/react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DashboardCharts: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
@@ -27,7 +28,7 @@ const DashboardCharts: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  // Get data for charts
+  // Get data for charts with a 30-day window
   const today = new Date();
   const startDate = format(subDays(today, 30), 'yyyy-MM-dd');
   const endDate = format(today, 'yyyy-MM-dd');
@@ -40,67 +41,70 @@ const DashboardCharts: React.FC = () => {
   // Transform time entries data (convert minutes to hours)
   const transformedTimeEntries = timeEntries.map(entry => ({
     ...entry,
-    // Convert minutes to hours for charts that expect hours
-    hours: entry.minutes / 60
+    hours: entry.minutes ? entry.minutes / 60 : 0
   }));
 
   // Filter data based on user role
   const roleFilteredProjects = projects.filter((project) => {
-    // For client role, only show their projects
     if (userRole === 'client' && userId) {
       return project.clientId === userId;
     }
-    // Admin and team see all projects
     return true;
   });
 
-  // Filter tasks based on user role
   const roleFilteredTasks = tasks.filter((task) => {
-    // For team members, prioritize their assigned tasks
     if (userRole === 'team' && userId) {
       return task.assigneeId === userId;
     }
-    // For clients, only show tasks for their projects
     if (userRole === 'client' && userId) {
       return roleFilteredProjects.some(p => p.id === task.projectId);
     }
-    // Admin sees all tasks
     return true;
   });
 
-  // Filter time entries based on user role
   const roleFilteredTimeEntries = transformedTimeEntries.filter((entry) => {
     if (userRole === 'team' && userId) {
       return entry.userId === userId;
     }
     if (userRole === 'client' && userId) {
-      const projectId = entry.projectId || (entry.task && entry.task.projectId);
-      return roleFilteredProjects.some(p => p.id === projectId);
+      return roleFilteredProjects.some(p => p.id === (entry.projectId || entry.task?.projectId));
     }
     return true;
   });
 
-  // Show loading state if data is not ready
-  const isLoading = isLoadingProjects || isLoadingTasks || isLoadingTimeEntries || isLoadingUsers;
+  const isLoading = !isClient || isLoadingProjects || isLoadingTasks || isLoadingTimeEntries || isLoadingUsers;
 
-  // If we're still on the server or loading data, return a loading placeholder
-  if (!isClient || isLoading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
+        <h2 className="text-2xl font-bold">
+          {userRole === 'admin' ? 'Administrator Dashboard' : 
+           userRole === 'team' ? 'Team Member Dashboard' : 
+           'Client Dashboard'}
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="p-6 animate-pulse">
-              <div className="h-6 bg-slate-700 rounded w-1/2 mb-4"></div>
-              <div className="h-[300px] bg-slate-800 rounded"></div>
+            <Card key={i} className="w-full">
+              <CardHeader>
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[300px] w-full" />
+              </CardContent>
             </Card>
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2].map((i) => (
-            <Card key={i} className="p-6 animate-pulse">
-              <div className="h-6 bg-slate-700 rounded w-1/2 mb-4"></div>
-              <div className="h-[350px] bg-slate-800 rounded"></div>
+            <Card key={i} className="w-full">
+              <CardHeader>
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[350px] w-full" />
+              </CardContent>
             </Card>
           ))}
         </div>
@@ -111,42 +115,51 @@ const DashboardCharts: React.FC = () => {
   // Get charts based on user role
   const getCharts = () => {
     const charts = {
-      topRow: [],
-      bottomRow: []
+      topRow: [] as React.ReactNode[],
+      bottomRow: [] as React.ReactNode[]
     };
 
     // Admin gets all charts
     if (userRole === 'admin') {
       charts.topRow = [
         <Card key="task-distribution">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Task Distribution</CardTitle>
+            <CardDescription>Overview of task status across projects</CardDescription>
+          </CardHeader>
+          <CardContent>
             <TaskDistributionChart 
-              title="Task Status" 
-              height={300}
               tasks={roleFilteredTasks}
               projects={roleFilteredProjects}
+              height={300}
             />
           </CardContent>
         </Card>,
         <Card key="time-tracking">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Time Tracking</CardTitle>
+            <CardDescription>Time spent on projects across the team</CardDescription>
+          </CardHeader>
+          <CardContent>
             <TimeTrackingChart 
-              title="Weekly Hours" 
-              height={300}
               timeEntries={roleFilteredTimeEntries}
               projects={roleFilteredProjects}
               users={users}
+              height={300}
             />
           </CardContent>
         </Card>,
         <Card key="team-performance">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Team Overview</CardTitle>
+            <CardDescription>Team productivity and performance metrics</CardDescription>
+          </CardHeader>
+          <CardContent>
             <TeamPerformanceChart 
-              title="Team Overview" 
-              height={300}
-              tasks={roleFilteredTasks}
               users={users}
+              tasks={roleFilteredTasks}
               timeEntries={roleFilteredTimeEntries}
+              height={300}
             />
           </CardContent>
         </Card>
@@ -154,50 +167,59 @@ const DashboardCharts: React.FC = () => {
       
       charts.bottomRow = [
         <Card key="project-progress">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Project Progress</CardTitle>
+            <CardDescription>Status and completion of all projects</CardDescription>
+          </CardHeader>
+          <CardContent>
             <ProjectProgressChart 
-              title="Project Status" 
-              height={350}
               projects={roleFilteredProjects}
+              height={350}
             />
           </CardContent>
         </Card>,
         <Card key="budget-comparison">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Budget Overview</CardTitle>
+            <CardDescription>Budget utilization across projects</CardDescription>
+          </CardHeader>
+          <CardContent>
             <BudgetComparisonChart 
-              title="Budget Overview" 
-              height={350}
               projects={roleFilteredProjects}
               timeEntries={roleFilteredTimeEntries}
+              height={350}
             />
           </CardContent>
         </Card>
       ];
     }
-    
     // Team member gets task-focused charts
     else if (userRole === 'team') {
       charts.topRow = [
         <Card key="task-distribution">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>My Tasks</CardTitle>
+            <CardDescription>Distribution of your assigned tasks</CardDescription>
+          </CardHeader>
+          <CardContent>
             <TaskDistributionChart 
-              title="My Tasks" 
-              description="Distribution of your assigned tasks"
-              height={300}
               tasks={roleFilteredTasks}
               projects={roleFilteredProjects}
+              height={300}
             />
           </CardContent>
         </Card>,
         <Card key="time-tracking">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>My Time Tracking</CardTitle>
+            <CardDescription>Your logged hours by project</CardDescription>
+          </CardHeader>
+          <CardContent>
             <TimeTrackingChart 
-              title="My Time Tracking" 
-              description="Your logged hours by project"
-              height={300}
               timeEntries={roleFilteredTimeEntries}
               projects={roleFilteredProjects}
               users={users}
+              height={300}
             />
           </CardContent>
         </Card>
@@ -205,39 +227,44 @@ const DashboardCharts: React.FC = () => {
       
       charts.bottomRow = [
         <Card key="project-progress">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Project Progress</CardTitle>
+            <CardDescription>Status of projects you're working on</CardDescription>
+          </CardHeader>
+          <CardContent>
             <ProjectProgressChart 
-              title="Project Progress" 
-              description="Status of projects you're working on"
-              height={350}
               projects={roleFilteredProjects}
+              height={350}
             />
           </CardContent>
         </Card>
       ];
     }
-    
     // Client gets project-focused charts
     else if (userRole === 'client') {
       charts.topRow = [
         <Card key="project-progress">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Your Projects</CardTitle>
+            <CardDescription>Current progress of your projects</CardDescription>
+          </CardHeader>
+          <CardContent>
             <ProjectProgressChart 
-              title="Your Projects" 
-              description="Current progress of your projects"
-              height={300}
               projects={roleFilteredProjects}
+              height={300}
             />
           </CardContent>
         </Card>,
         <Card key="task-distribution">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Project Tasks</CardTitle>
+            <CardDescription>Status of tasks across your projects</CardDescription>
+          </CardHeader>
+          <CardContent>
             <TaskDistributionChart 
-              title="Project Tasks" 
-              description="Status of tasks across your projects"
-              height={300}
               tasks={roleFilteredTasks}
               projects={roleFilteredProjects}
+              height={300}
             />
           </CardContent>
         </Card>
@@ -245,13 +272,15 @@ const DashboardCharts: React.FC = () => {
       
       charts.bottomRow = [
         <Card key="budget-comparison">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Budget Status</CardTitle>
+            <CardDescription>Budget vs actual spending on your projects</CardDescription>
+          </CardHeader>
+          <CardContent>
             <BudgetComparisonChart 
-              title="Budget Status" 
-              description="Budget vs actual spending on your projects"
-              height={350}
               projects={roleFilteredProjects}
               timeEntries={roleFilteredTimeEntries}
+              height={350}
             />
           </CardContent>
         </Card>
@@ -271,15 +300,15 @@ const DashboardCharts: React.FC = () => {
          'Client Dashboard'}
       </h2>
       
-      {/* Top row with charts based on role */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {charts.topRow}
       </div>
       
-      {/* Bottom row with charts based on role */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {charts.bottomRow}
-      </div>
+      {charts.bottomRow.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {charts.bottomRow}
+        </div>
+      )}
     </div>
   );
 };

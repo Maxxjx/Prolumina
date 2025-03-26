@@ -4,9 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Task, Project } from '@prisma/client';
-
-// Dynamically import ApexCharts to avoid SSR issues
-const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import ChartWrapper from './ChartWrapper';
 
 interface TaskDistributionChartProps {
   tasks: Task[];
@@ -14,19 +12,35 @@ interface TaskDistributionChartProps {
   height?: number;
   title?: string;
   description?: string;
+  enableExport?: boolean;
 }
 
 export function TaskDistributionChart({
-  tasks,
-  projects,
+  tasks = [],
+  projects = [],
   height = 350,
   title = 'Task Distribution',
-  description = 'Distribution of tasks by status across projects'
+  description = 'Distribution of tasks by status across projects',
+  enableExport = false
 }: TaskDistributionChartProps) {
-  // Prepare data for chart
+  if (!tasks.length || !projects.length) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center" style={{ height }}>
+          <p className="text-gray-400">No tasks data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Create map for project lookups
   const projectMap = new Map<string, string>();
   projects.forEach(project => {
-    projectMap.set(project.id, project.name);
+    projectMap.set(project.id.toString(), project.name);
   });
 
   // Count tasks by status
@@ -43,11 +57,11 @@ export function TaskDistributionChart({
     }
   });
 
-  // Prepare data for project-based distribution
+  // Count tasks by project and status
   const projectTaskCounts = new Map<string, { [key: string]: number }>();
   
   projects.forEach(project => {
-    projectTaskCounts.set(project.id, {
+    projectTaskCounts.set(project.id.toString(), {
       'NOT_STARTED': 0,
       'IN_PROGRESS': 0,
       'REVIEW': 0,
@@ -56,8 +70,8 @@ export function TaskDistributionChart({
   });
 
   tasks.forEach(task => {
-    if (task.projectId && projectTaskCounts.has(task.projectId)) {
-      const projectCounts = projectTaskCounts.get(task.projectId);
+    if (task.projectId && projectTaskCounts.has(task.projectId.toString())) {
+      const projectCounts = projectTaskCounts.get(task.projectId.toString());
       if (projectCounts && task.status in projectCounts) {
         projectCounts[task.status as keyof typeof statusCounts]++;
       }
@@ -68,10 +82,7 @@ export function TaskDistributionChart({
   const donutOptions = {
     chart: {
       type: 'donut' as const,
-      foreColor: '#64748b', // slate-500
-      toolbar: {
-        show: true,
-      },
+      foreColor: '#64748b',
     },
     plotOptions: {
       pie: {
@@ -84,58 +95,42 @@ export function TaskDistributionChart({
             },
             value: {
               show: true,
-              fontSize: '22px',
-              formatter: (val: number) => val.toString(),
+              formatter: function(value: any) {
+                return value.toString();
+              }
             },
             total: {
               show: true,
               label: 'Total Tasks',
-              formatter: (w: any) => {
+              formatter: function() {
                 return tasks.length.toString();
-              },
-            },
-          },
-        },
-      },
+              }
+            }
+          }
+        }
+      }
     },
     dataLabels: {
-      enabled: false,
+      enabled: false
     },
     legend: {
       position: 'bottom' as const,
       horizontalAlign: 'center' as const,
-      fontSize: '14px',
+      fontSize: '14px'
     },
     tooltip: {
-      enabled: true,
       y: {
-        formatter: (val: number) => `${val} tasks`,
-      },
+        formatter: (val: number) => `${val} tasks`
+      }
     },
     theme: {
-      mode: 'dark' as const,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            height: 300,
-          },
-          legend: {
-            position: 'bottom',
-          },
-        },
-      },
-    ],
+      mode: 'dark' as const
+    }
   };
 
   const donutSeries = Object.values(statusCounts);
   const donutLabels = Object.keys(statusCounts).map(status => 
-    status
-      .split('_')
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(' ')
+    status.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
   );
 
   // Chart configuration for bar chart
@@ -143,72 +138,39 @@ export function TaskDistributionChart({
     chart: {
       type: 'bar' as const,
       stacked: true,
-      foreColor: '#64748b', // slate-500
-      toolbar: {
-        show: true,
-      },
+      foreColor: '#64748b'
     },
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '55%',
-        borderRadius: 2,
-      },
+        columnWidth: '70%',
+        borderRadius: 2
+      }
     },
     dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent'],
+      enabled: false
     },
     xaxis: {
       categories: Array.from(projectTaskCounts.keys()).map(id => projectMap.get(id) || 'Unknown'),
       labels: {
         style: {
-          fontSize: '12px',
-        },
-      },
+          fontSize: '12px'
+        }
+      }
     },
     yaxis: {
       title: {
-        text: 'Number of Tasks',
-        style: {
-          fontSize: '14px',
-        },
-      },
-    },
-    legend: {
-      position: 'bottom' as const,
-      horizontalAlign: 'center' as const,
-      fontSize: '14px',
-    },
-    fill: {
-      opacity: 1,
+        text: 'Number of Tasks'
+      }
     },
     tooltip: {
       y: {
-        formatter: (val: number) => `${val} tasks`,
-      },
+        formatter: (val: number) => `${val} tasks`
+      }
     },
-    colors: ['#f472b6', '#60a5fa', '#fbbf24', '#34d399'], // Pink, Blue, Yellow, Green
     theme: {
-      mode: 'dark' as const,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            height: 300,
-          },
-          legend: {
-            position: 'bottom',
-          },
-        },
-      },
-    ],
+      mode: 'dark' as const
+    }
   };
 
   const statuses = ['NOT_STARTED', 'IN_PROGRESS', 'REVIEW', 'COMPLETED'];
@@ -221,7 +183,7 @@ export function TaskDistributionChart({
 
   const barSeries = statuses.map((status, index) => ({
     name: statusLabels[index],
-    data: Array.from(projectTaskCounts.values()).map(counts => counts[status]),
+    data: Array.from(projectTaskCounts.values()).map(counts => counts[status])
   }));
 
   return (
@@ -234,28 +196,26 @@ export function TaskDistributionChart({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <h3 className="text-sm font-medium mb-3">Status Distribution</h3>
-            {typeof window !== 'undefined' && (
-              <ApexChart
-                options={{
-                  ...donutOptions,
-                  labels: donutLabels,
-                }}
-                series={donutSeries}
-                type="donut"
-                height={height}
-              />
-            )}
+            <ChartWrapper
+              type="donut"
+              options={{
+                ...donutOptions,
+                labels: donutLabels
+              }}
+              series={donutSeries}
+              height={height}
+              enableExport={enableExport}
+            />
           </div>
           <div>
             <h3 className="text-sm font-medium mb-3">Project-wise Distribution</h3>
-            {typeof window !== 'undefined' && (
-              <ApexChart
-                options={barOptions}
-                series={barSeries}
-                type="bar"
-                height={height}
-              />
-            )}
+            <ChartWrapper
+              type="bar"
+              options={barOptions}
+              series={barSeries}
+              height={height}
+              enableExport={enableExport}
+            />
           </div>
         </div>
       </CardContent>
@@ -263,4 +223,4 @@ export function TaskDistributionChart({
   );
 }
 
-export default TaskDistributionChart; 
+export default TaskDistributionChart;
