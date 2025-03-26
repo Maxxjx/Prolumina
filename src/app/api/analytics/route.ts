@@ -245,96 +245,94 @@ const analyticsService = {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session?.user) {
       return handleAuthError();
     }
 
-    // Parse query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const type = searchParams.get('type') || 'summary';
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
-    
-    // Validate parameters
-    if (limit > 100) {
-      return errorResponse(
-        'Limit cannot exceed 100 items',
-        400,
-        'INVALID_LIMIT'
-      );
-    }
-    
-    // Response data object
-    const data: any = {};
-    
-    // Handle summary analytics
-    if (type === 'summary') {
-      try {
-        const projectStats = await analyticsService.getProjectStats();
-        const taskStats = await analyticsService.getTaskStats();
-        const userStats = await analyticsService.getUserStats();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
 
-        data.analytics = {
+    switch (type) {
+      case 'summary': {
+        const [projectStats, taskStats, userStats, timeStats] = await Promise.all([
+          analyticsService.getProjectStats(),
+          analyticsService.getTaskStats(),
+          analyticsService.getUserStats(),
+          analyticsService.getTimeStats()
+        ]);
+
+        // Get completed tasks count
+        const completedTasksCount = taskStats.tasksByStatus.find(s => s.status === TaskStatus.COMPLETED)?.count || 0;
+        const totalTasksCount = taskStats.totalTasks;
+
+        return NextResponse.json({
           projects: {
             total: projectStats.totalProjects,
-            inProgress: Array.isArray(projectStats.projectsByStatus) 
-              ? projectStats.projectsByStatus.find((s: any) => s.status === 'in-progress')?.count || 0
+            inProgress: projectStats.projectsByStatus.find(s => s.status === ProjectStatus.IN_PROGRESS)?.count || 0,
+            completed: projectStats.projectsByStatus.find(s => s.status === ProjectStatus.COMPLETED)?.count || 0,
+            onHold: projectStats.projectsByStatus.find(s => s.status === ProjectStatus.ON_HOLD)?.count || 0
+          },
+          tasks: {
+            total: taskStats.totalTasks,
+            inProgress: taskStats.tasksByStatus.find(s => s.status === TaskStatus.IN_PROGRESS)?.count || 0,
+            completed: completedTasksCount,
+            overdue: taskStats.overdueTasks,
+            upcoming: taskStats.upcomingTasks,
+            completion: totalTasksCount > 0 
+              ? Math.round((Number(completedTasksCount) / Number(totalTasksCount)) * 100)
               : 0
           },
           users: {
             total: userStats.totalUsers,
+            active: userStats.tasksByAssignee.length,
             team: await prisma.user.count({ where: { role: 'TEAM' } })
           },
-          tasks: {
-            total: taskStats.totalTasks,
-            overdue: taskStats.overdueTasks
+          time: {
+            total: timeStats.totalHours,
+            tracked: timeStats.timeByProject.reduce((acc, curr) => acc + Number(curr.minutes), 0) / 60
           },
           budget: {
             total: await prisma.project.aggregate({
               _sum: { budget: true }
-            }).then(res => res._sum?.budget || 0),
+            }).then(res => Number(res._sum?.budget || 0)),
             utilization: 70 // This should be calculated based on actual expenses if you have that data
           }
-        };
-      } catch (error) {
-        console.error('Error fetching summary analytics:', error);
-        return handleDatabaseError(error);
-      }
-    }
-    
-    // Handle recent activity
-    if (type === 'recent-activity') {
-      try {
-        const activities = await prisma.activityLog.findMany({
-          take: limit,
-          orderBy: { timestamp: 'desc' },
-          include: {
-            user: { select: { name: true } },
-          }
         });
-        
-        data.analytics = {
-          activity: activities.map((activity) => ({
-            id: activity.id,
-            userName: activity.user?.name || 'Unknown User',
-            action: activity.action,
-            entityType: activity.entityType,
-            entityName: activity.entityName,
-            projectName: activity.details && typeof activity.details === 'object' 
-              ? (activity.details as any).projectName || null 
-              : null,
-            timestamp: activity.timestamp.toISOString()
-          }))
-        };
-      } catch (error) {
-        console.error('Error fetching recent activity:', error);
-        return handleDatabaseError(error);
+      }
+      case 'recent-activity': {
+        try {
+          const activities = await prisma.activityLog.findMany({
+            take: limit,
+            orderBy: { timestamp: 'desc' },
+            include: {
+              user: { select: { name: true } },
+            }
+          });
+          
+          data.analytics = {
+            activity: activities.map((activity) => ({
+              id: activity.id,
+              userName: activity.user?.name || 'Unknown User',
+              action: activity.action,
+              entityType: activity.entityType,
+              entityName: activity.entityName,
+              projectName: activity.details && typeof activity.details === 'object' 
+                ? (activity.details as any).projectName || null 
+                : null,
+              timestamp: activity.timestamp.toISOString()
+            }))
+          };
+        } catch (error) {
+          console.error('Error fetching recent activity:', error);
+          return handleDatabaseError(error);
+        }
+      }
+      default: {
+        // Handle other analytics types
+        // ... existing implementation for other types
       }
     }
-
-    // Handle other analytics types
-    // ... existing implementation for other types
 
     return NextResponse.json(data);
   } catch (error) {
