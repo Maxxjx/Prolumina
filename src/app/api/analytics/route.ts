@@ -5,22 +5,48 @@ import { authOptions } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 import { errorResponse, handleDatabaseError, handleAuthError } from '@/lib/api-utils';
 
+interface StatusCount {
+  status: string;
+  count: number;
+}
+
+interface ProjectStats {
+  totalProjects: number;
+  projectsByStatus: StatusCount[];
+  projectsByPriority: StatusCount[];
+  recentProjects: any[];
+}
+
+interface TaskStats {
+  totalTasks: number;
+  tasksByStatus: StatusCount[];
+  tasksByPriority: StatusCount[];
+  overdueTasks: number;
+  upcomingTasks: number;
+}
+
+interface UserStats {
+  totalUsers: number;
+  tasksByAssignee: any[];
+  recentActivity: any[];
+}
+
 // Analytics service with database implementation
 const analyticsService = {
-  getProjectStats: async () => {
+  getProjectStats: async (): Promise<ProjectStats> => {
     try {
       // Get total count of projects
       const totalProjects = await prisma.project.count();
       
       // Get projects by status using raw query
-      const projectsByStatus = await prisma.$queryRaw`
+      const projectsByStatus = await prisma.$queryRaw<StatusCount[]>`
         SELECT status, COUNT(*) as count 
         FROM "public"."Project" 
         GROUP BY status
       `;
       
       // Get projects by priority using raw query
-      const projectsByPriority = await prisma.$queryRaw`
+      const projectsByPriority = await prisma.$queryRaw<StatusCount[]>`
         SELECT priority, COUNT(*) as count 
         FROM "public"."Project" 
         GROUP BY priority
@@ -55,20 +81,20 @@ const analyticsService = {
     }
   },
   
-  getTaskStats: async () => {
+  getTaskStats: async (): Promise<TaskStats> => {
     try {
       // Get total count of tasks
       const totalTasks = await prisma.task.count();
       
       // Get tasks by status using raw query
-      const tasksByStatus = await prisma.$queryRaw`
+      const tasksByStatus = await prisma.$queryRaw<StatusCount[]>`
         SELECT status, COUNT(*) as count 
         FROM "public"."Task" 
         GROUP BY status
       `;
       
       // Get tasks by priority using raw query
-      const tasksByPriority = await prisma.$queryRaw`
+      const tasksByPriority = await prisma.$queryRaw<StatusCount[]>`
         SELECT priority, COUNT(*) as count 
         FROM "public"."Task" 
         GROUP BY priority
@@ -110,13 +136,13 @@ const analyticsService = {
     }
   },
   
-  getUserStats: async () => {
+  getUserStats: async (): Promise<UserStats> => {
     try {
       // Get total count of users
       const totalUsers = await prisma.user.count();
       
       // Get tasks by assignee using raw query
-      const tasksByAssignee = await prisma.$queryRaw`
+      const tasksByAssignee = await prisma.$queryRaw<any[]>`
         SELECT u.name, COUNT(t.id) as taskCount
         FROM "public"."User" u
         LEFT JOIN "public"."Task" t ON u.id = t."assigneeId"
@@ -172,7 +198,7 @@ const analyticsService = {
       const totalHours = (totalTimeResult._sum?.minutes || 0) / 60;
       
       // Get time entries per project using raw query
-      const timeByProject = await prisma.$queryRaw`
+      const timeByProject = await prisma.$queryRaw<any[]>`
         SELECT p.name, SUM(te.minutes) as minutes
         FROM "public"."TimeEntry" te
         JOIN "public"."Task" t ON te."taskId" = t.id
@@ -183,7 +209,7 @@ const analyticsService = {
       `;
       
       // Get time entries per user using raw query
-      const timeByUser = await prisma.$queryRaw`
+      const timeByUser = await prisma.$queryRaw<any[]>`
         SELECT u.name, SUM(te.minutes) as minutes
         FROM "public"."TimeEntry" te
         JOIN "public"."User" u ON te."userId" = u.id
@@ -278,9 +304,7 @@ export async function GET(request: NextRequest) {
         data.analytics = {
           projects: {
             total: projectStats.totalProjects,
-            inProgress: Array.isArray(projectStats.projectsByStatus) 
-              ? projectStats.projectsByStatus.find((s: any) => s.status === 'in-progress')?.count || 0
-              : 0
+            inProgress: projectStats.projectsByStatus.find(s => s.status === 'in-progress')?.count || 0
           },
           users: {
             total: userStats.totalUsers,
@@ -288,7 +312,12 @@ export async function GET(request: NextRequest) {
           },
           tasks: {
             total: taskStats.totalTasks,
-            overdue: taskStats.overdueTasks
+            completed: taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0,
+            inProgress: taskStats.tasksByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0,
+            overdue: taskStats.overdueTasks,
+            completion: taskStats.totalTasks > 0 
+              ? Math.round((taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0) / taskStats.totalTasks * 100)
+              : 0
           },
           budget: {
             total: await prisma.project.aggregate({
@@ -339,10 +368,10 @@ export async function GET(request: NextRequest) {
         const taskStats = await analyticsService.getTaskStats();
         data.analytics = {
           data: [
-            { status: 'NOT_STARTED', count: taskStats.tasksByStatus.find((s: any) => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
-            { status: 'IN_PROGRESS', count: taskStats.tasksByStatus.find((s: any) => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
-            { status: 'REVIEW', count: taskStats.tasksByStatus.find((s: any) => s.status === 'REVIEW')?.count || 0, color: '#F59E0B' },
-            { status: 'COMPLETED', count: taskStats.tasksByStatus.find((s: any) => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
+            { status: 'NOT_STARTED', count: taskStats.tasksByStatus.find(s => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
+            { status: 'IN_PROGRESS', count: taskStats.tasksByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
+            { status: 'REVIEW', count: taskStats.tasksByStatus.find(s => s.status === 'REVIEW')?.count || 0, color: '#F59E0B' },
+            { status: 'COMPLETED', count: taskStats.tasksByStatus.find(s => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
           ]
         };
       } catch (error) {
@@ -356,10 +385,10 @@ export async function GET(request: NextRequest) {
         const projectStats = await analyticsService.getProjectStats();
         data.analytics = {
           data: [
-            { status: 'NOT_STARTED', count: projectStats.projectsByStatus.find((s: any) => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
-            { status: 'IN_PROGRESS', count: projectStats.projectsByStatus.find((s: any) => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
-            { status: 'ON_HOLD', count: projectStats.projectsByStatus.find((s: any) => s.status === 'ON_HOLD')?.count || 0, color: '#F59E0B' },
-            { status: 'COMPLETED', count: projectStats.projectsByStatus.find((s: any) => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
+            { status: 'NOT_STARTED', count: projectStats.projectsByStatus.find(s => s.status === 'NOT_STARTED')?.count || 0, color: '#6B7280' },
+            { status: 'IN_PROGRESS', count: projectStats.projectsByStatus.find(s => s.status === 'IN_PROGRESS')?.count || 0, color: '#3B82F6' },
+            { status: 'ON_HOLD', count: projectStats.projectsByStatus.find(s => s.status === 'ON_HOLD')?.count || 0, color: '#F59E0B' },
+            { status: 'COMPLETED', count: projectStats.projectsByStatus.find(s => s.status === 'COMPLETED')?.count || 0, color: '#10B981' }
           ]
         };
       } catch (error) {
