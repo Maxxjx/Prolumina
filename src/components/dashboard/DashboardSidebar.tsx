@@ -152,7 +152,7 @@ export function DashboardSidebar() {
               <div className="h-8 w-8 rounded-full bg-pulse-500 flex items-center justify-center mr-2">
                 <span className="text-white font-bold text-lg">P</span>
               </div>
-              <h1 className="text-white text-xl font-bold">ProjectPulse</h1>
+              <h1 className="text-white text-xl font-bold">Prolumina</h1>
             </div>
           </div>
           
@@ -319,7 +319,7 @@ export function DashboardSidebar() {
           <div className="h-8 w-8 rounded-full bg-pulse-500 flex items-center justify-center mr-2">
             <span className="text-white font-bold text-lg">P</span>
           </div>
-          {!isCollapsed && <h1 className="text-white text-xl font-bold">ProjectPulse</h1>}
+          {!isCollapsed && <h1 className="text-white text-xl font-bold">Prolumina</h1>}
         </div>
       </div>
       

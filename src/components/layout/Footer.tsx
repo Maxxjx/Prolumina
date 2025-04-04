@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="h-8 w-8 rounded-md bg-pulse-500 bg-gradient-to-br from-pulse-400 to-pulse-600 flex items-center justify-center shadow-md">
                 <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="font-bold text-xl text-white">ProjectPulse</span>
+              <span className="font-bold text-xl text-white">Prolumina</span>
             </div>
             <p className="text-gray-400 text-sm">
               High-performance project management for teams that demand excellence.
@@ -66,7 +66,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-white/5 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} ProjectPulse. All rights reserved.</p>
+          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Prolumina. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy</Link>
             <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">Terms</Link>

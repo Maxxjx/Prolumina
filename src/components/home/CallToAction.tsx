@@ -20,7 +20,7 @@ const CallToAction = () => {
               Ready to Transform Your Project Management?
             </h2>
             <p className="text-xl text-gray-300 mb-10 animate-slide-down animate-delay-100">
-              Join thousands of teams delivering projects faster and more efficiently with ProjectPulse.
+              Join thousands of teams delivering projects faster and more efficiently with Prolumina.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 animate-slide-up animate-delay-200">
               <Button 

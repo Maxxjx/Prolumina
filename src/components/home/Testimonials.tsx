@@ -46,7 +46,7 @@ const Testimonials = () => {
   
   const testimonials = [
     {
-      content: "ProjectPulse transformed how our team manages projects. The real-time analytics and multi-role access have streamlined our workflow significantly.",
+      content: "Prolumina transformed how our team manages projects. The real-time analytics and multi-role access have streamlined our workflow significantly.",
       author: "Sarah Johnson",
       title: "Product Manager",
       company: "TechSolutions Inc.",
@@ -60,7 +60,7 @@ const Testimonials = () => {
       rating: 5
     },
     {
-      content: "As a client, I appreciate the transparency ProjectPulse provides. I can track progress in real-time without constant meetings or updates.",
+      content: "As a client, I appreciate the transparency Prolumina provides. I can track progress in real-time without constant meetings or updates.",
       author: "Alex Rivera",
       title: "Marketing Director",
       company: "Brandwise",
@@ -120,7 +120,7 @@ const Testimonials = () => {
             Loved by Teams and Clients
           </h2>
           <p className="text-gray-400 animate-slide-down animate-delay-100">
-            See why teams choose ProjectPulse to manage their most important projects.
+            See why teams choose Prolumina to manage their most important projects.
           </p>
         </div>
 

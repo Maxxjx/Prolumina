@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.user) {
         toast({
           title: "Login successful",
-          description: `Welcome to ProjectPulse!`,
+          description: `Welcome to Prolumina!`,
         });
         
         navigate('/dashboard');

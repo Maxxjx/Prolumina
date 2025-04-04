@@ -41,7 +41,7 @@ const Hero = () => {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-pulse-500/10 border border-pulse-500/20 text-pulse-300 mb-6 animate-fade-in">
-            <span className="text-xs font-medium">Introducing ProjectPulse v1.0</span>
+            <span className="text-xs font-medium">Introducing Prolumina v1.0</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6 animate-slide-down">

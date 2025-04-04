@@ -82,7 +82,7 @@ const Features = () => {
             Everything You Need to Manage Projects
           </h2>
           <p className="text-gray-400 animate-slide-down animate-delay-100">
-            ProjectPulse combines powerful features with an intuitive interface to help your team deliver projects on time and within budget.
+            Prolumina combines powerful features with an intuitive interface to help your team deliver projects on time and within budget.
           </p>
         </div>
 

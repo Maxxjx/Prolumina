@@ -61,7 +61,7 @@ const Login = () => {
               <div className="h-10 w-10 rounded-md bg-pulse-500 bg-gradient-to-br from-pulse-400 to-pulse-600 flex items-center justify-center shadow-md">
                 <span className="text-white font-bold text-xl">P</span>
               </div>
-              <span className="font-bold text-2xl text-white">ProjectPulse</span>
+              <span className="font-bold text-2xl text-white">Prolumina</span>
             </Link>
           </div>
           

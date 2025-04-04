@@ -36,7 +36,7 @@ const Navbar = () => {
           <div className="h-8 w-8 rounded-md bg-pulse-500 bg-gradient-to-br from-pulse-400 to-pulse-600 flex items-center justify-center shadow-md">
             <span className="text-white font-bold text-lg">P</span>
           </div>
-          <span className="font-bold text-xl text-white">ProjectPulse</span>
+          <span className="font-bold text-xl text-white">Prolumina</span>
         </Link>
 
         {/* Desktop Navigation */}
