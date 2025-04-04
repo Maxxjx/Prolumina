@@ -1,69 +1,184 @@
-# Welcome to your Lovable project
+# Prolumina - Project Management System
 
-## Project info
+Prolumina is a modern, feature-rich project management system built with React and Supabase, designed to help teams collaborate effectively on projects.
 
-**URL**: https://lovable.dev/projects/cfa9aec9-eabc-4767-92e9-8e0164579958
+![Prolumina Dashboard](https://example.com/dashboard-screenshot.png)
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **User Management**: Handle multiple user roles (admin, team, client) with appropriate permissions
+- **Project Dashboard**: Visual representation of project progress and statistics
+- **Task Management**: Create, assign, and track tasks with priority levels and deadlines
+- **Team Collaboration**: Assign team members to projects and tasks
+- **Activity Logging**: Track all changes and actions within the system
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-**Use Lovable**
+## Technology Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cfa9aec9-eabc-4767-92e9-8e0164579958) and start prompting.
+- **Frontend**:
+  - React with TypeScript
+  - Vite for fast development and building
+  - ShadCN UI for modern, accessible components 
+  - Tailwind CSS for styling
+  - Framer Motion for animations
+  - React Router for navigation
+  - Zustand for state management
+  - React Query for data fetching
+  - Recharts for data visualization
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Backend**:
+  - Supabase for authentication and database
+  - PostgreSQL for data storage
+  - Row Level Security (RLS) for data protection
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js (v16+)
+- npm or yarn
+- Supabase account (for the backend)
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/prolumina.git
+   cd prolumina
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Create a `.env.local` file in the root directory with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+4. Start the development server:
+   ```
+   npm run dev
+   ```
+
+### Supabase Configuration
+
+This project uses Supabase for authentication and database functionality. You'll need to set up the following:
+
+1. Create a new Supabase project
+2. Set up the database tables according to the schema in `src/types/supabase.ts`
+3. Configure Row Level Security (RLS) policies for the tables
+
+#### Setting up RLS Policies
+
+The application is experiencing issues with RLS policies for the `activity_logs` table. To fix this:
+
+1. Navigate to your Supabase dashboard
+2. Go to Authentication -> Policies
+3. Add the following RLS policy for the `activity_logs` table:
+
+```sql
+-- For insert operations
+CREATE POLICY "Enable insert for authenticated users" ON "public"."activity_logs"
+FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- For select operations
+CREATE POLICY "Enable select for authenticated users" ON "public"."activity_logs"
+FOR SELECT USING (auth.uid() IS NOT NULL);
 ```
 
-**Edit a file directly in GitHub**
+These policies ensure that authenticated users can read and create activity logs.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/     # Reusable UI components
+├── hooks/          # Custom React hooks
+├── lib/            # Utility functions and configurations
+├── pages/          # Application pages/routes
+├── stores/         # Zustand state stores
+├── styles/         # Global styles
+└── types/          # TypeScript type definitions
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Development
 
-## What technologies are used for this project?
+### Available Scripts
 
-This project is built with .
+- `npm run dev` - Start the development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview the production build locally
+- `npm run lint` - Run ESLint to check for code issues
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Deployment
 
-## How can I deploy this project?
+To deploy the application:
 
-Simply open [Lovable](https://lovable.dev/projects/cfa9aec9-eabc-4767-92e9-8e0164579958) and click on Share -> Publish.
+1. Build the project:
+   ```
+   npm run build
+   ```
 
-## I want to use a custom domain - is that possible?
+2. Deploy the contents of the `dist` directory to your hosting provider of choice (Netlify, Vercel, etc.)
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Troubleshooting Common Issues
+
+### Activity Log Errors
+
+If you see errors like `new row violates row-level security policy for table "activity_logs"`, check that:
+
+1. Your Supabase RLS policies are correctly configured as described above
+2. The user has proper authentication
+3. The insert operation includes all required fields
+
+### UI Components and DOM Nesting
+
+If you encounter DOM nesting warnings like `validateDOMNesting(...): <tr> cannot appear as a child of <div>`, follow these solutions:
+
+1. **Using Framer Motion with Tables**:
+   - Use shadcn's Table components (`Table`, `TableHeader`, `TableRow`, `TableHead`, `TableBody`, `TableCell`) instead of HTML elements
+   - When using Framer Motion with tables, wrap individual cells rather than rows:
+     ```tsx
+     <TableRow>
+       {row.getVisibleCells().map((cell) => (
+         <TableCell key={cell.id}>
+           <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+           >
+             {flexRender(cell.column.columnDef.cell, cell.getContext())}
+           </motion.div>
+         </TableCell>
+       ))}
+     </TableRow>
+     ```
+
+2. **Correct Structure with TanStack Table**:
+   - Follow the correct nesting hierarchy: `Table > TableHeader > TableRow > TableHead` and `Table > TableBody > TableRow > TableCell`
+   - When using `AnimatePresence` with tables, apply it to the children of `TableBody` rather than to `TableBody` itself
+
+3. **Using the `as` prop**:
+   - Leverage Framer Motion's `as` prop to maintain proper DOM structure:
+     ```tsx
+     <motion.tr
+       as={TableRow}
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+     >
+       {/* Cell contents */}
+     </motion.tr>
+     ```
+
+4. **Animation Mode**:
+   - Use `<AnimatePresence mode="wait">` when animating table components to prevent nesting issues
+
+## Contributing
+
+Feel free to submit issues or pull requests if you have suggestions for improvements.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
