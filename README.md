@@ -91,6 +91,19 @@ FOR SELECT USING (auth.uid() IS NOT NULL);
 
 These policies ensure that authenticated users can read and create activity logs.
 
+## Supabase (Database) Configuration
+
+This project uses Supabase for authentication and database functionality. **Do not use my database credentials.** Follow these steps to set up your own database:
+
+1. Go to [Supabase](https://supabase.com/) and create your own account and new project.
+2. In your new project, create the necessary tables and import the schema as described in [src/integrations/supabase/types.ts](src/integrations/supabase/types.ts) and [src/lib/seedDatabase.sql](src/lib/seedDatabase.sql).
+3. Create a `.env.local` file in the root directory with your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+4. To seed your database with sample data, run the provided SQL script ([src/lib/seedDatabase.sql](src/lib/seedDatabase.sql)) in your Supabase dashboard or execute the [`seedTestData`](src/utils/seedHelpers.ts) function.
+
 ## Project Structure
 
 ```
