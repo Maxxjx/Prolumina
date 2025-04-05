@@ -5,6 +5,7 @@ import Hero from '@/components/home/Hero';
 import Features from '@/components/home/Features';
 import Testimonials from '@/components/home/Testimonials';
 import CallToAction from '@/components/home/CallToAction';
+import Newsletter from '@/components/home/Newsletter';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +81,7 @@ const Index = () => {
         <Features />
         <Testimonials />
         <CallToAction />
+        <Newsletter />
       </main>
       
       <Footer />

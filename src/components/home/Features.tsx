@@ -14,15 +14,15 @@ interface FeatureCardProps {
 const FeatureCard = ({ icon, title, description, className, delay }: FeatureCardProps) => (
   <GlassCard 
     className={cn(
-      "flex flex-col items-start transform transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg hover:shadow-pulse-500/10 group", 
+      "flex flex-col items-start transform transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg hover:shadow-purple-500/10 group", 
       `animate-slide-up animate-delay-${delay} animate-on-scroll`, 
       className
     )}
   >
-    <div className="mb-5 p-3 rounded-lg bg-pulse-500/10 text-pulse-400 group-hover:bg-pulse-500/20 group-hover:scale-110 transform transition-all duration-300">
+    <div className="mb-5 p-3 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 group-hover:scale-110 transform transition-all duration-300">
       {icon}
     </div>
-    <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-pulse-300 transition-colors">{title}</h3>
+    <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-purple-300 transition-colors">{title}</h3>
     <p className="text-gray-400 text-sm">{description}</p>
   </GlassCard>
 );
@@ -75,11 +75,11 @@ const Features = () => {
     <section className="py-20 relative overflow-hidden" id="features">
       <div className="container px-4 md:px-6 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-dark-200 text-pulse-400 border border-white/5 mb-4 animate-fade-in hover:bg-dark-100 transition-all cursor-pointer">
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-dark-200 text-purple-400 border border-purple-500/10 mb-4 animate-fade-in hover:bg-dark-100 transition-all cursor-pointer">
             <span className="text-xs font-medium">Powerful Features</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 animate-slide-down">
-            <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Everything You Need</span> to Manage Projects
+            <span className="bg-gradient-to-r from-purple-100 to-purple-300 bg-clip-text text-transparent">Everything You Need</span> to Manage Projects
           </h2>
           <p className="text-gray-400 animate-slide-down animate-delay-100">
             Prolumina combines powerful features with an intuitive interface to help your team deliver projects on time and within budget.
@@ -99,7 +99,7 @@ const Features = () => {
         </div>
       </div>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-pulse-500/5 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/5 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
       
       {/* Animated dots pattern */}
       <div className="absolute inset-0 -z-5 opacity-20">

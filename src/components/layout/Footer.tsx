@@ -16,10 +16,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
             <div className="flex items-center space-x-2 group">
-              <div className="h-9 w-9 rounded-md bg-pulse-500 bg-gradient-to-br from-pulse-400 to-pulse-600 flex items-center justify-center shadow-md group-hover:shadow-pulse-500/20 transition-all duration-300">
+              <div className="h-9 w-9 rounded-md bg-purple-500 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-md group-hover:shadow-purple-500/20 transition-all duration-300">
                 <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="font-bold text-xl text-white group-hover:text-pulse-300 transition-colors">Prolumina</span>
+              <span className="font-bold text-xl text-white group-hover:text-purple-300 transition-colors">Prolumina</span>
             </div>
             <p className="text-gray-400 text-sm">
               High-performance project management for teams that demand excellence.
@@ -67,7 +67,7 @@ const Footer = () => {
                 {section.links.map((link, j) => (
                   <li key={j}>
                     <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm hover:translate-x-1 inline-flex items-center group">
-                      <span className="group-hover:text-pulse-300">{link}</span>
+                      <span className="group-hover:text-purple-300">{link}</span>
                     </Link>
                   </li>
                 ))}
@@ -80,28 +80,10 @@ const Footer = () => {
           <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Prolumina. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             {['Privacy', 'Terms', 'Data Policy'].map((item, i) => (
-              <Link key={i} to="/" className="text-gray-400 hover:text-white transition-colors text-sm hover:text-pulse-300">
+              <Link key={i} to="/" className="text-gray-400 hover:text-white transition-colors text-sm hover:text-purple-300">
                 {item}
               </Link>
             ))}
-          </div>
-        </div>
-
-        {/* Newsletter subscription - added feature */}
-        <div className="mt-12 pt-8 border-t border-white/5">
-          <div className="max-w-xl mx-auto text-center">
-            <h3 className="text-white font-medium mb-2">Subscribe to our newsletter</h3>
-            <p className="text-gray-400 text-sm mb-4">Get the latest updates and news directly to your inbox.</p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="bg-dark-300 border border-white/10 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pulse-500 focus:border-transparent flex-grow"
-              />
-              <button className="bg-pulse-500 hover:bg-pulse-600 text-white rounded-md px-4 py-2 font-medium transition-colors">
-                Subscribe
-              </button>
-            </div>
           </div>
         </div>
       </div>
