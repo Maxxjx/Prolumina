@@ -186,10 +186,10 @@ export default function UserManagement() {
               className="bg-pulse-600 hover:bg-pulse-700 transition-colors"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Add User
-            </Button>
-          </div>
+            Add User
+          </Button>
         </div>
+      </div>
       </motion.div>
       
       <motion.div
@@ -198,27 +198,27 @@ export default function UserManagement() {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <Card className="bg-dark-400 border-none shadow-lg mb-8 overflow-hidden">
-          <div className="p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder="Search users..." 
+        <div className="p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input 
+                placeholder="Search users..." 
                   className="pl-9 bg-dark-300 border-white/10 focus:border-pulse-500/50 transition-all"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="border-white/10 w-full sm:w-auto">
-                      <Filter className="h-4 w-4 mr-2" />
-                      {roleFilter === "all" ? "All Roles" : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
-                      <ChevronDown className="h-4 w-4 ml-2" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-dark-300 border-white/10">
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="border-white/10 w-full sm:w-auto">
+                    <Filter className="h-4 w-4 mr-2" />
+                    {roleFilter === "all" ? "All Roles" : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-dark-300 border-white/10">
                     <DropdownMenuItem 
                       onClick={() => setRoleFilter("all")}
                       className={roleFilter === "all" ? "bg-pulse-600/20 text-pulse-400" : ""}
@@ -247,24 +247,24 @@ export default function UserManagement() {
                       <BadgeCheck className="h-4 w-4 mr-2" />
                       Client
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            
+          </div>
+          
             <div className="overflow-auto rounded-lg shadow-inner">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/5 hover:bg-dark-300">
-                    <TableHead className="text-gray-400">Name</TableHead>
-                    {!isMobile && <TableHead className="text-gray-400">Email</TableHead>}
-                    <TableHead className="text-gray-400">Role</TableHead>
-                    {!isMobile && <TableHead className="text-gray-400">Status</TableHead>}
-                    <TableHead className="text-gray-400 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {usersLoading ? (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/5 hover:bg-dark-300">
+                  <TableHead className="text-gray-400">Name</TableHead>
+                  {!isMobile && <TableHead className="text-gray-400">Email</TableHead>}
+                  <TableHead className="text-gray-400">Role</TableHead>
+                  {!isMobile && <TableHead className="text-gray-400">Status</TableHead>}
+                  <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {usersLoading ? (
                     Array(5).fill(null).map((_, index) => (
                       <TableRow key={index} className="border-white/5">
                         <TableCell>
@@ -272,16 +272,16 @@ export default function UserManagement() {
                             <Skeleton className="h-8 w-8 rounded-full mr-2" />
                             <Skeleton className="h-4 w-32" />
                           </div>
-                        </TableCell>
+                    </TableCell>
                         {!isMobile && <TableCell><Skeleton className="h-4 w-40" /></TableCell>}
                         <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                         {!isMobile && <TableCell><Skeleton className="h-5 w-16" /></TableCell>}
                         <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                      </TableRow>
+                  </TableRow>
                     ))
-                  ) : filteredUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={isMobile ? 3 : 5} className="text-center py-8 text-gray-400">
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isMobile ? 3 : 5} className="text-center py-8 text-gray-400">
                         <div className="flex flex-col items-center justify-center">
                           <AlertCircle className="h-10 w-10 text-gray-500 mb-2" />
                           <p>No users found. Create a new user to get started.</p>
@@ -357,17 +357,17 @@ export default function UserManagement() {
                                   : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
                               }
                             >
-                              {user.role === "admin" ? (
-                                <Shield className="h-3 w-3 mr-1" />
+                          {user.role === "admin" ? (
+                            <Shield className="h-3 w-3 mr-1" />
                               ) : user.role === "team" ? (
                                 <UserCheck className="h-3 w-3 mr-1" />
                               ) : (
                                 <BadgeCheck className="h-3 w-3 mr-1" />
                               )}
-                              {user.role}
-                            </Badge>
+                          {user.role}
+                        </Badge>
                           </motion.td>
-                          {!isMobile && (
+                      {!isMobile && (
                             <motion.td
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -375,8 +375,8 @@ export default function UserManagement() {
                               className="p-4"
                             >
                               <Badge variant="outline" className="border-green-500 text-green-500 bg-green-500/10">
-                                active
-                              </Badge>
+                            active
+                          </Badge>
                             </motion.td>
                           )}
                           <motion.td
@@ -386,49 +386,49 @@ export default function UserManagement() {
                             className="text-right p-4"
                           >
                             <TooltipProvider>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
+                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>User actions</p>
                                     </TooltipContent>
                                   </Tooltip>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-dark-300 border-white/10">
-                                  <DropdownMenuItem className="flex items-center cursor-pointer">
-                                    <Eye className="h-4 w-4 mr-2" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-dark-300 border-white/10">
+                            <DropdownMenuItem className="flex items-center cursor-pointer">
+                              <Eye className="h-4 w-4 mr-2" />
                                     View Profile
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => openEditDialog(user)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => openEditDialog(user)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
                                   <DropdownMenuSeparator className="bg-white/10" />
                                   <DropdownMenuItem 
                                     className="flex items-center text-red-500 cursor-pointer hover:bg-red-500/10" 
                                     onClick={() => openDeleteDialog(user)}
                                   >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                             </TooltipProvider>
                           </motion.td>
-                        </TableRow>
+                    </TableRow>
                       ))}
                     </AnimatePresence>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                )}
+              </TableBody>
+            </Table>
           </div>
-        </Card>
+        </div>
+      </Card>
       </motion.div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -439,8 +439,8 @@ export default function UserManagement() {
           transition={{ duration: 0.4, delay: 0.2 }}
         >
           <Card className="bg-dark-400 border-none shadow-lg h-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-white flex items-center">
                   <Clock className="h-5 w-5 mr-2 text-pulse-500" />
                   Recent Activity
@@ -545,12 +545,12 @@ export default function UserManagement() {
                   <div className="bg-dark-300 rounded-lg p-3 border border-white/5">
                     <div className="mb-1 flex justify-center">
                       <UserCheck className="h-5 w-5 text-blue-500" />
-                    </div>
+                      </div>
                     <p className="text-xl font-bold text-center text-white">
                       {users.filter(user => user.role === 'team').length}
-                    </p>
+                        </p>
                     <p className="text-xs text-gray-400 text-center">Team</p>
-                  </div>
+                      </div>
                   
                   <div className="bg-dark-300 rounded-lg p-3 border border-white/5">
                     <div className="mb-1 flex justify-center">
@@ -601,11 +601,11 @@ export default function UserManagement() {
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
+          </div>
+        </Card>
         </motion.div>
       </div>
-      
+
       {/* Add User Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-[500px] bg-dark-400 border-white/10">
@@ -621,7 +621,7 @@ export default function UserManagement() {
           <UserForm onSubmit={handleAddUser} />
         </DialogContent>
       </Dialog>
-      
+
       {/* Edit User Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-[500px] bg-dark-400 border-white/10">
@@ -642,7 +642,7 @@ export default function UserManagement() {
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Confirmation */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-[450px] bg-dark-400 border-white/10">
@@ -656,13 +656,13 @@ export default function UserManagement() {
             </DialogDescription>
           </DialogHeader>
           {currentUser && (
-            <DeleteConfirmation
+      <DeleteConfirmation
               title={`Delete User: ${currentUser.name}`}
               description={`Are you sure you want to delete this user? This will remove all of their data from the system.`}
               onConfirm={handleDeleteUser}
-              isOpen={showDeleteDialog}
-              onClose={() => setShowDeleteDialog(false)}
-            />
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      />
           )}
         </DialogContent>
       </Dialog>

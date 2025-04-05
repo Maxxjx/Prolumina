@@ -1,7 +1,7 @@
-
 import React, { useRef, useEffect } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
-import { Star } from 'lucide-react';
+import { Star, ArrowRight } from 'lucide-react';
+import AnimatedGradient from '@/components/ui/AnimatedGradient';
 
 interface TestimonialProps {
   content: string;
@@ -14,7 +14,7 @@ interface TestimonialProps {
 
 const Testimonial = ({ content, author, title, company, rating, delay }: TestimonialProps) => (
   <GlassCard 
-    className={`flex flex-col justify-between h-full animate-slide-up animate-delay-${delay}`}
+    className={`flex flex-col justify-between h-full animate-slide-up animate-delay-${delay} animate-on-scroll hover:shadow-lg hover:shadow-pulse-500/10 transition-all duration-300 group`}
     highlight
   >
     <div>
@@ -23,14 +23,14 @@ const Testimonial = ({ content, author, title, company, rating, delay }: Testimo
           <Star 
             key={i} 
             size={16} 
-            className={i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-600"} 
+            className={i < rating ? "text-yellow-400 fill-yellow-400 group-hover:scale-110 transition-transform" : "text-gray-600"} 
           />
         ))}
       </div>
-      <p className="text-gray-300 mb-6 italic">"{content}"</p>
+      <p className="text-gray-300 mb-6 italic group-hover:text-white transition-colors">"{content}"</p>
     </div>
     <div className="flex items-center">
-      <div className="w-10 h-10 rounded-full bg-pulse-500/30 flex items-center justify-center text-white font-semibold mr-3">
+      <div className="w-10 h-10 rounded-full bg-pulse-500/30 flex items-center justify-center text-white font-semibold mr-3 group-hover:bg-pulse-500/50 transition-colors">
         {author.charAt(0)}
       </div>
       <div>
@@ -110,39 +110,46 @@ const Testimonials = () => {
   }, []);
 
   return (
-    <section className="py-20 bg-dark-400">
+    <AnimatedGradient 
+      className="py-24" 
+      id="testimonials"
+      gradientClassName="from-dark-200/50 via-dark-300/50 to-dark-400/50 opacity-70"
+    >
       <div className="container px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-dark-300 text-pulse-400 border border-white/5 mb-4 animate-fade-in">
-            <span className="text-xs font-medium">What People Say</span>
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-dark-200 text-pulse-400 border border-white/5 mb-4 animate-fade-in hover:bg-dark-100 transition-all cursor-pointer">
+            <span className="text-xs font-medium">Customer Stories</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 animate-slide-down">
-            Loved by Teams and Clients
+            What Our <span className="text-pulse-400">Clients</span> Say
           </h2>
           <p className="text-gray-400 animate-slide-down animate-delay-100">
-            See why teams choose Prolumina to manage their most important projects.
+            Don't just take our word for it. Here's what teams across various industries have to say about Prolumina.
           </p>
         </div>
-
-        <div 
-          ref={containerRef}
-          className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <div key={index} className="card-parallax transition-transform duration-200 ease-out">
-              <Testimonial
-                content={testimonial.content}
-                author={testimonial.author}
-                title={testimonial.title}
-                company={testimonial.company}
-                rating={testimonial.rating}
-                delay={index * 100}
-              />
-            </div>
+            <Testimonial
+              key={index}
+              content={testimonial.content}
+              author={testimonial.author}
+              title={testimonial.title}
+              company={testimonial.company}
+              rating={testimonial.rating}
+              delay={(index % 3) * 100}
+            />
           ))}
         </div>
+        
+        <div className="mt-16 text-center animate-fade-in animate-delay-500">
+          <div className="inline-flex items-center space-x-2 py-2 px-4 rounded-full border border-white/10 bg-dark-200/50 text-white hover:bg-dark-100/50 transition-colors cursor-pointer">
+            <span>View all customer stories</span>
+            <ArrowRight size={16} />
+          </div>
+        </div>
       </div>
-    </section>
+    </AnimatedGradient>
   );
 };
 

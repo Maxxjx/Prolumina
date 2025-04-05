@@ -15,7 +15,7 @@ export default function Dashboard() {
   const { isAdmin, isTeam, user } = useAuth();
   const [timeRange, setTimeRange] = useState("3M");
   const [watchlistTab, setWatchlistTab] = useState("mostViewed");
-  
+
   const { 
     stats, 
     projectOverviews, 
@@ -113,7 +113,7 @@ export default function Dashboard() {
                   {loading ? (
                     <Skeleton className="h-6 w-12" />
                   ) : (
-                    <p className="text-lg font-bold text-white">{stat.value}</p>
+                  <p className="text-lg font-bold text-white">{stat.value}</p>
                   )}
                   <span className="text-green-400 text-xs">{stat.change}</span>
                 </div>
@@ -151,35 +151,35 @@ export default function Dashboard() {
                   <Skeleton className="h-52 w-full" />
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
                     data={sprintPerformanceData[timeRange as keyof typeof sprintPerformanceData]}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" vertical={false} />
-                    <XAxis dataKey="name" stroke="#4B5563" />
-                    <YAxis stroke="#4B5563" />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', borderRadius: '0.5rem' }}
-                      labelStyle={{ color: '#F9FAFB' }}
-                      itemStyle={{ color: '#8b5cf6' }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#8b5cf6"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorValue)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" vertical={false} />
+                  <XAxis dataKey="name" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', borderRadius: '0.5rem' }}
+                    labelStyle={{ color: '#F9FAFB' }}
+                    itemStyle={{ color: '#8b5cf6' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorValue)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
               )}
             </div>
           </GlassCard>
@@ -229,29 +229,29 @@ export default function Dashboard() {
                       ))
                     ) : (
                       projectOverviews.map((project, index) => (
-                        <tr key={index} className="border-b border-white/5 text-sm">
-                          <td className="py-3 flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-pulse-500/20 flex items-center justify-center mr-2">
+                      <tr key={index} className="border-b border-white/5 text-sm">
+                        <td className="py-3 flex items-center">
+                          <div className="w-8 h-8 rounded-full bg-pulse-500/20 flex items-center justify-center mr-2">
                               <span className="text-pulse-500">{project.name.charAt(0)}</span>
-                            </div>
+                          </div>
                             {project.name}
-                          </td>
+                        </td>
                           <td className="py-3">{project.deadline}</td>
                           <td className="py-3">{project.teamCount} members</td>
                           <td className="py-3">{project.budget}</td>
-                          <td className="py-3">
-                            <div className="w-full bg-dark-300 h-2 rounded-full overflow-hidden">
-                              <div 
-                                className={cn(
-                                  "h-full rounded-full",
+                        <td className="py-3">
+                          <div className="w-full bg-dark-300 h-2 rounded-full overflow-hidden">
+                            <div 
+                              className={cn(
+                                "h-full rounded-full",
                                   project.status === "On Track" ? "bg-green-500" : 
                                   project.status === "At Risk" ? "bg-orange-500" : 
                                   "bg-red-500"
-                                )}
+                              )}
                                 style={{ width: `${project.progress}%` }}
-                              ></div>
-                            </div>
-                          </td>
+                            ></div>
+                          </div>
+                        </td>
                           <td className="py-3">
                             <span 
                               className={cn(
@@ -263,8 +263,8 @@ export default function Dashboard() {
                             >
                               {project.status}
                             </span>
-                          </td>
-                        </tr>
+                        </td>
+                      </tr>
                       ))
                     )}
                   </tbody>

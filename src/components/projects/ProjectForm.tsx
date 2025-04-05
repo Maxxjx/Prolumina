@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -201,10 +201,10 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
+        <div className="space-y-2">
         <Label htmlFor="name" className="flex items-center text-sm font-medium">
           <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
-          Project Name
+            Project Name
         </Label>
         <div className="relative">
           <Input
@@ -238,9 +238,9 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
             {errors.name}
           </motion.p>
         )}
-      </div>
-      
-      <div className="space-y-2">
+        </div>
+        
+        <div className="space-y-2">
         <Label htmlFor="description" className="flex items-center text-sm font-medium">
           <FileText className="h-4 w-4 mr-2 text-gray-400" />
           Project Description
@@ -284,16 +284,16 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
           <span className="mx-1">/</span>
           <span>10+ characters recommended</span>
         </div>
-      </div>
-      
+        </div>
+        
       <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
-        <div className="space-y-2">
+          <div className="space-y-2">
           <Label htmlFor="status" className="flex items-center text-sm font-medium">
             <ClipboardCheck className="h-4 w-4 mr-2 text-gray-400" />
             Project Status
           </Label>
-          <Select
-            value={formData.status}
+            <Select 
+              value={formData.status} 
             onValueChange={(value) => handleChange("status", value as 'active' | 'completed' | 'on-hold' | 'cancelled')}
             onOpenChange={() => handleBlur("status")}
           >
@@ -308,9 +308,9 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
                   : "border-white/10 focus:border-pulse-500/50"
               )}
             >
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent className="bg-dark-300 border-white/10">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-dark-300 border-white/10">
               <SelectItem value="active" className="focus:bg-blue-500/20 focus:text-blue-400">
                 <div className="flex items-center">
                   <span className="h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
@@ -335,8 +335,8 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
                   Cancelled
                 </div>
               </SelectItem>
-            </SelectContent>
-          </Select>
+              </SelectContent>
+            </Select>
           {errors.status && touched.status && (
             <motion.p 
               className="text-red-500 text-xs mt-1 flex items-center" 
@@ -347,37 +347,37 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
               {errors.status}
             </motion.p>
           )}
-        </div>
-        
-        <div className="space-y-2">
+          </div>
+          
+          <div className="space-y-2">
           <Label htmlFor="deadline" className="flex items-center text-sm font-medium">
             <Timer className="h-4 w-4 mr-2 text-gray-400" />
             Project Deadline
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
                 id="deadline"
-                variant="outline"
+                  variant="outline"
                 className={cn(
                   "w-full justify-start text-left font-normal bg-dark-300 border-white/10 hover:bg-dark-200",
                   !date && "text-muted-foreground"
                 )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP") : <span>Select deadline</span>}
-              </Button>
-            </PopoverTrigger>
+                </Button>
+              </PopoverTrigger>
             <PopoverContent className="w-auto p-0 bg-dark-300 border-white/10" align="start">
-              <Calendar
-                mode="single"
+                <Calendar
+                  mode="single"
                 selected={date || undefined}
                 onSelect={setDate}
-                initialFocus
+                  initialFocus
                 className="bg-dark-300"
-              />
-            </PopoverContent>
-          </Popover>
+                />
+              </PopoverContent>
+            </Popover>
           <p className="text-xs text-gray-400 mt-1">
             {date ? (
               <>Deadline in {Math.ceil((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</>
@@ -386,7 +386,7 @@ export default function ProjectForm({ initialData, onSubmit }: ProjectFormProps)
             )}
           </p>
         </div>
-      </div>
+          </div>
       
       <div className="space-y-2 pt-2">
         <Label className="flex items-center text-sm font-medium">

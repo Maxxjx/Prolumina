@@ -193,10 +193,10 @@ export default function UserForm({ initialData, onSubmit }: UserFormProps) {
           Full Name
         </Label>
         <div className="relative">
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => handleChange("name", e.target.value)}
             onBlur={() => handleBlur("name")}
             placeholder="Enter user's full name"
             className={cn(
@@ -232,11 +232,11 @@ export default function UserForm({ initialData, onSubmit }: UserFormProps) {
           Email Address
         </Label>
         <div className="relative">
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleChange("email", e.target.value)}
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => handleChange("email", e.target.value)}
             onBlur={() => handleBlur("email")}
             placeholder="Enter user's email address"
             className={cn(

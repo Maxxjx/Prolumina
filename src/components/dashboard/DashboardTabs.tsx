@@ -330,14 +330,14 @@ export function DashboardTabs() {
                         <Skeleton className="h-52 w-full" />
                       </div>
                     ) : (
-                      <ChartContainer
-                        config={{
-                          tasks: {
+                  <ChartContainer
+                    config={{
+                      tasks: {
                             label: "Completed Tasks",
-                            theme: {
-                              light: "#8b5cf6",
-                              dark: "#8b5cf6"
-                            }
+                        theme: {
+                          light: "#8b5cf6",
+                          dark: "#8b5cf6"
+                        }
                           },
                           progress: {
                             label: "Completion Rate",
@@ -345,24 +345,24 @@ export function DashboardTabs() {
                               light: "#22c55e",
                               dark: "#22c55e"
                             }
-                          }
-                        }}
-                      >
-                        <AreaChart
+                      }
+                    }}
+                  >
+                    <AreaChart
                           data={sprintPerformanceData[timeRange]}
-                          margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                        >
-                          <defs>
-                            <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
+                      margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                    >
+                      <defs>
+                        <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
-                              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                            </linearGradient>
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                        </linearGradient>
                             <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor="#22c55e" stopOpacity={0.4} />
                               <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                             </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" vertical={false} />
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" vertical={false} />
                           <XAxis 
                             dataKey="name" 
                             stroke="#4B5563" 
@@ -380,14 +380,14 @@ export function DashboardTabs() {
                             content={<ChartTooltipContent />} 
                             cursor={{ stroke: '#8b5cf6', strokeWidth: 1, strokeDasharray: '5 5' }}
                           />
-                          <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#8b5cf6"
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#colorTasks)"
-                            name="tasks"
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#8b5cf6"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorTasks)"
+                        name="tasks"
                             animationDuration={1500}
                           />
                           <Line
@@ -399,9 +399,9 @@ export function DashboardTabs() {
                             activeDot={{ r: 6, stroke: '#0f172a', strokeWidth: 2 }}
                             name="progress"
                             animationDuration={1800}
-                          />
-                        </AreaChart>
-                      </ChartContainer>
+                      />
+                    </AreaChart>
+                  </ChartContainer>
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -424,8 +424,8 @@ export function DashboardTabs() {
                 <div className="flex-1 flex flex-col justify-center items-center relative z-10">
                   {tasks.length > 0 ? (
                     <div className="relative w-48 h-48 mb-3">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
                           <span className="text-4xl font-bold text-white">{completionRate}%</span>
                           <p className="text-xs text-gray-400">Completion rate</p>
                         </div>
@@ -459,7 +459,7 @@ export function DashboardTabs() {
                     <div className="flex flex-col items-center justify-center py-8">
                       <AlertCircle className="h-12 w-12 text-gray-500 mb-2" />
                       <p className="text-gray-400">No tasks available</p>
-                    </div>
+                  </div>
                   )}
                   
                   <div className="w-full grid gap-2 mt-2">
@@ -477,7 +477,7 @@ export function DashboardTabs() {
                             style={{ backgroundColor: entry.color }}
                           ></div>
                           <span className="text-gray-300">{entry.name}</span>
-                        </div>
+                    </div>
                         <span className="font-medium">{entry.value}</span>
                       </motion.div>
                     ))}
@@ -591,7 +591,7 @@ export function DashboardTabs() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {projectsLoading ? (
                 Array(4).fill(0).map((_, i) => (
-                  <div key={i} className="bg-dark-400 rounded-lg p-4 border border-white/5">
+                <div key={i} className="bg-dark-400 rounded-lg p-4 border border-white/5">
                     <Skeleton className="h-6 w-40 mb-2" />
                     <Skeleton className="h-4 w-full mb-3" />
                     <Skeleton className="h-4 w-full mb-2" />
@@ -654,7 +654,7 @@ export function DashboardTabs() {
                           </div>
                         )}
                       </div>
-                    </div>
+                </div>
                   )}
                 </motion.div>
               ))}
@@ -681,7 +681,7 @@ export function DashboardTabs() {
               <div className="space-y-3">
                 {tasksLoading ? (
                   Array(5).fill(0).map((_, i) => (
-                    <div key={i} className="flex items-center p-3 bg-dark-400 rounded-lg border border-white/5">
+                  <div key={i} className="flex items-center p-3 bg-dark-400 rounded-lg border border-white/5">
                       <Skeleton className="h-4 w-4 mr-3" />
                       <div className="flex-1">
                         <Skeleton className="h-4 w-32 mb-1" />
@@ -698,8 +698,8 @@ export function DashboardTabs() {
                     transition={{ duration: 0.2 }}
                   >
                     <div className="flex-shrink-0">
-                      <input 
-                        type="checkbox" 
+                    <input 
+                      type="checkbox" 
                         className="h-5 w-5 rounded border-gray-600 text-pulse-600 focus:ring-pulse-600"
                         checked={task.status === 'completed'}
                         readOnly
@@ -815,7 +815,7 @@ export function DashboardTabs() {
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                       </Button>
-                    </div>
+                  </div>
                   </motion.div>
                 ))}
               </div>

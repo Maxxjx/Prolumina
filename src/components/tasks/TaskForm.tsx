@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -334,12 +334,12 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
           Task Description
         </Label>
         <div className="relative">
-          <Textarea
+                <Textarea 
             id="description"
             value={formData.description}
             onChange={(e) => handleChange("description", e.target.value)}
             onBlur={() => handleBlur("description")}
-            placeholder="Describe the task in detail"
+                  placeholder="Describe the task in detail" 
             className={cn(
               "bg-dark-300 min-h-[100px] resize-y pl-3 pr-9 border transition-colors",
               errors.description && touched.description
@@ -445,7 +445,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
             <Activity className="h-4 w-4 mr-2 text-gray-400" />
             Status
           </Label>
-          <Select
+                <Select 
             value={formData.status}
             onValueChange={(value) => handleChange("status", value as 'todo' | 'in_progress' | 'review' | 'done')}
             onOpenChange={() => handleBlur("status")}
@@ -462,7 +462,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
               )}
             >
               <SelectValue placeholder="Select status" />
-            </SelectTrigger>
+                    </SelectTrigger>
             <SelectContent className="bg-dark-300 border-white/10">
               <SelectItem value="todo" className="focus:bg-gray-500/20 focus:text-gray-400">
                 <div className="flex items-center">
@@ -488,8 +488,8 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
                   Done
                 </div>
               </SelectItem>
-            </SelectContent>
-          </Select>
+                  </SelectContent>
+                </Select>
         </div>
       </div>
       
@@ -499,7 +499,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
             <Flag className="h-4 w-4 mr-2 text-gray-400" />
             Priority
           </Label>
-          <Select
+                <Select 
             value={formData.priority}
             onValueChange={(value) => handleChange("priority", value as 'low' | 'medium' | 'high')}
             onOpenChange={() => handleBlur("priority")}
@@ -515,8 +515,8 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
                   : "border-white/10 focus:border-pulse-500/50"
               )}
             >
-              <SelectValue placeholder="Select priority" />
-            </SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
             <SelectContent className="bg-dark-300 border-white/10">
               <SelectItem value="low" className="focus:bg-blue-500/20 focus:text-blue-400">
                 <div className="flex items-center">
@@ -536,8 +536,8 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
                   High
                 </div>
               </SelectItem>
-            </SelectContent>
-          </Select>
+                  </SelectContent>
+                </Select>
         </div>
         
         <div className="space-y-2">
@@ -545,30 +545,30 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
             <Clock className="h-4 w-4 mr-2 text-gray-400" />
             Due Date
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
+                <Popover>
+                  <PopoverTrigger asChild>
+                      <Button
                 id="due_date"
                 variant="outline"
                 className={cn(
                   "w-full justify-start text-left font-normal bg-dark-300 border-white/10 hover:bg-dark-200",
                   !date && "text-muted-foreground"
                 )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP") : <span>Select due date</span>}
-              </Button>
-            </PopoverTrigger>
+                      </Button>
+                  </PopoverTrigger>
             <PopoverContent className="w-auto p-0 bg-dark-300 border-white/10" align="start">
-              <Calendar
-                mode="single"
+                    <Calendar
+                      mode="single"
                 selected={date || undefined}
                 onSelect={setDate}
-                initialFocus
+                      initialFocus
                 className="bg-dark-300"
-              />
-            </PopoverContent>
-          </Popover>
+                    />
+                  </PopoverContent>
+                </Popover>
           <p className="text-xs text-gray-400 mt-1">
             {date ? (
               <span className={
@@ -595,9 +595,9 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
           Assigned Team Members
         </Label>
         
-        <Button 
-          type="button" 
-          variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
           className="w-full justify-between text-left bg-dark-300 border-white/10 hover:bg-dark-200"
           onClick={() => setShowDialog(true)}
         >
@@ -607,7 +607,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
               : `${selectedUsers.length} member${selectedUsers.length === 1 ? '' : 's'} assigned`}
           </span>
           <Users className="h-4 w-4" />
-        </Button>
+            </Button>
         
         {selectedUsers.length > 0 && (
           <motion.div 
@@ -677,7 +677,7 @@ export default function TaskForm({ initialData, onSubmit }: TaskFormProps) {
       
       <AnimatePresence>
         {showDialog && (
-          <AssignTeamDialog 
+      <AssignTeamDialog
             projectId={formData.project_id} 
             isOpen={showDialog} 
             onClose={() => setShowDialog(false)}

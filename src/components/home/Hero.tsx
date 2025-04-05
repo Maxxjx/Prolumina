@@ -33,50 +33,68 @@ const Hero = () => {
         <div className="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM4YjVjZjYxMCIgc3Ryb2tlLXdpZHRoPSIxIj48L3BhdGg+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIj48L3JlY3Q+PC9zdmc+')]"></div>
         <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-dark-300 to-transparent"></div>
         <div className="absolute top-0 left-0 right-0 w-full h-full">
-          <div className="absolute top-[10%] left-[20%] w-64 h-64 bg-pulse-500/20 rounded-full filter blur-3xl"></div>
-          <div className="absolute top-[20%] right-[20%] w-72 h-72 bg-pulse-600/20 rounded-full filter blur-3xl"></div>
+          <div className="absolute top-[10%] left-[20%] w-64 h-64 bg-pulse-500/20 rounded-full filter blur-3xl animate-pulse-slow"></div>
+          <div className="absolute top-[20%] right-[20%] w-72 h-72 bg-pulse-600/20 rounded-full filter blur-3xl animate-pulse-slow animate-delay-700"></div>
         </div>
       </div>
       
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-pulse-500/10 border border-pulse-500/20 text-pulse-300 mb-6 animate-fade-in">
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-pulse-500/10 border border-pulse-500/20 text-pulse-300 mb-6 animate-fade-in hover:bg-pulse-500/20 transition-all duration-300 cursor-pointer">
             <span className="text-xs font-medium">Introducing Prolumina v1.0</span>
+            <span className="ml-2 text-xs">New</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6 animate-slide-down">
             Manage Projects with
-            <span className="relative inline-block px-2">
+            <span className="relative inline-block px-2 ml-2">
               <span className="relative z-10 bg-gradient-to-r from-pulse-300 to-pulse-500 bg-clip-text text-transparent">
                 Precision
               </span>
               <span className="absolute inset-0 bg-pulse-500/10 blur-lg -z-10"></span>
             </span> 
-            and Ease
+            <span className="block mt-1">and Ease</span>
           </h1>
           
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto animate-slide-down animate-delay-100">
-            A high-performance, scalable, and secure project management system designed for multi-role usage. Experience the future of project management.
+            A high-performance, scalable, and secure project management system designed for multi-role usage. 
+            <span className="text-pulse-300">Experience the future of project management.</span>
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-3 mb-12 w-full sm:w-auto animate-slide-down animate-delay-200">
-            <Button size="lg" className="bg-pulse-500 hover:bg-pulse-600 text-white w-full sm:w-auto px-8">
-              Get Started <ChevronRight className="ml-1 h-4 w-4" />
+            <Button size="lg" className="bg-pulse-500 hover:bg-pulse-600 text-white w-full sm:w-auto px-8 group relative overflow-hidden">
+              <span className="relative z-10 flex items-center">
+                Get Started <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <span className="absolute inset-0 bg-gradient-to-r from-pulse-400 to-pulse-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
             </Button>
-            <Button size="lg" variant="outline" className="border-white/10 hover:bg-white/5 text-white w-full sm:w-auto px-8">
+            <Button size="lg" variant="outline" className="border-white/10 hover:bg-white/5 text-white w-full sm:w-auto px-8 hover:border-white/30 transition-colors">
               View Demo
             </Button>
+          </div>
+          
+          <div className="flex items-center gap-4 text-sm text-gray-400 animate-fade-in animate-delay-300">
+            <div className="flex -space-x-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-dark-300 bg-dark-200 flex items-center justify-center text-xs font-medium">
+                  {String.fromCharCode(64 + i)}
+                </div>
+              ))}
+            </div>
+            <span>Trusted by 10,000+ teams worldwide</span>
           </div>
         </div>
         
         <div 
           ref={videoRef}
-          className="relative mx-auto mt-8 max-w-5xl rounded-lg overflow-hidden shadow-2xl border border-white/10 animate-fade-in animate-delay-300"
+          className="relative mx-auto mt-8 max-w-5xl rounded-lg overflow-hidden shadow-2xl border border-white/10 animate-fade-in animate-delay-300 animate-on-scroll"
         >
+          {/* Hover animation */}
+          <div className="absolute inset-0 opacity-0 hover:opacity-100 bg-gradient-to-b from-pulse-500/30 via-transparent to-transparent transition-opacity duration-500 pointer-events-none"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-pulse-500/20 to-dark-300/80 mix-blend-overlay pointer-events-none"></div>
           <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <div className="bg-dark-200 aspect-[16/9] flex items-center justify-center">
-            <div className="w-full max-w-4xl bg-dark-300 rounded-md overflow-hidden border border-white/10">
+            <div className="w-full max-w-4xl bg-dark-300 rounded-md overflow-hidden border border-white/10 shadow-lg transform transition-transform duration-700 hover:scale-[1.01]">
               <div className="bg-dark-400 h-10 border-b border-white/10 flex items-center px-4">
                 <div className="flex space-x-2">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -93,7 +111,7 @@ const Hero = () => {
                     <div className="h-8 w-4/5 bg-dark-200 rounded mb-4"></div>
                     <div className="space-y-2">
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="h-10 bg-dark-200 rounded flex items-center px-3">
+                        <div key={i} className="h-10 bg-dark-200 rounded flex items-center px-3 hover:bg-dark-100 transition-colors cursor-pointer">
                           <div className="w-6 h-6 rounded bg-pulse-500/20 mr-3"></div>
                           <div className="flex-1 h-4 bg-dark-200 rounded"></div>
                         </div>
@@ -103,7 +121,7 @@ const Hero = () => {
                   <div className="col-span-9">
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="bg-dark-200 rounded-lg p-4">
+                        <div key={i} className="bg-dark-200 rounded-lg p-4 hover:shadow-md hover:shadow-pulse-500/5 transition-all duration-300 cursor-pointer">
                           <div className="w-12 h-12 rounded-full bg-pulse-500/20 mb-3"></div>
                           <div className="h-5 bg-dark-100 rounded mb-2"></div>
                           <div className="h-4 bg-dark-100 rounded w-2/3"></div>
@@ -113,15 +131,15 @@ const Hero = () => {
                     <div className="bg-dark-200 rounded-lg p-6">
                       <div className="flex justify-between items-center mb-6">
                         <div className="h-6 bg-dark-100 rounded w-1/4"></div>
-                        <div className="h-10 bg-pulse-500/30 rounded w-1/5"></div>
+                        <div className="h-10 bg-pulse-500/30 rounded w-1/5 hover:bg-pulse-500/40 transition-colors cursor-pointer"></div>
                       </div>
                       <div className="h-[200px] bg-dark-100 rounded-lg relative overflow-hidden">
                         <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-pulse-500/20 to-transparent rounded-lg">
                           <div className="absolute bottom-0 left-0 w-full h-1/2">
-                            <div className="h-full w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[10%]"></div>
-                            <div className="h-[70%] w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[30%]"></div>
-                            <div className="h-[90%] w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[50%]"></div>
-                            <div className="h-[40%] w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[70%]"></div>
+                            <div className="h-full w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[10%] hover:bg-pulse-500/60 transition-colors cursor-pointer"></div>
+                            <div className="h-[70%] w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[30%] hover:bg-pulse-500/60 transition-colors cursor-pointer"></div>
+                            <div className="h-[90%] w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[50%] hover:bg-pulse-500/60 transition-colors cursor-pointer"></div>
+                            <div className="h-[40%] w-1/6 bg-pulse-500/40 rounded-t-lg absolute bottom-0 left-[70%] hover:bg-pulse-500/60 transition-colors cursor-pointer"></div>
                           </div>
                         </div>
                       </div>
@@ -135,6 +153,23 @@ const Hero = () => {
       </div>
       
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-dark-300 to-transparent"></div>
+      
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(12)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute rounded-full bg-pulse-500/10"
+            style={{
+              width: `${Math.random() * 20 + 5}px`,
+              height: `${Math.random() * 20 + 5}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`
+            }}
+          ></div>
+        ))}
+      </div>
     </div>
   );
 };
